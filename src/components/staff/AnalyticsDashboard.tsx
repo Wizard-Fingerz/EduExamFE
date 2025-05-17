@@ -1,7 +1,6 @@
 import React from 'react';
 import {
   Box,
-  Grid,
   Paper,
   Typography,
   Card,
@@ -10,8 +9,6 @@ import {
   LinearProgress,
 } from '@mui/material';
 import {
-  Timeline,
-  TrendingUp,
   People,
   School,
   Assignment,
@@ -69,99 +66,118 @@ export const AnalyticsDashboard: React.FC = () => {
       <Typography variant="h4" sx={{ mb: 4 }}>Analytics Dashboard</Typography>
 
       {/* Performance Metrics */}
-      <Grid container spacing={3} sx={{ mb: 4 }}>
+      <Box sx={{ 
+        display: 'grid',
+        gridTemplateColumns: {
+          xs: '1fr',
+          sm: '1fr 1fr',
+          md: 'repeat(4, 1fr)'
+        },
+        gap: 3,
+        mb: 4
+      }}>
         {performanceMetrics.map((metric, index) => (
-          <Grid item xs={12} sm={6} md={3} key={index}>
-            <Card>
-              <CardContent>
-                <Stack spacing={2}>
-                  <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                    {metric.icon}
-                    <Typography variant="h4">{metric.value}</Typography>
-                  </Box>
-                  <Box>
-                    <Typography variant="subtitle1" gutterBottom>
-                      {metric.title}
-                    </Typography>
-                    <Typography variant="caption" color="text.secondary">
-                      {metric.trend}
-                    </Typography>
-                  </Box>
-                  <LinearProgress
-                    variant="determinate"
-                    value={metric.progress}
-                    sx={{ height: 8, borderRadius: 2 }}
-                  />
-                </Stack>
-              </CardContent>
-            </Card>
-          </Grid>
+          <Card key={index}>
+            <CardContent>
+              <Stack spacing={2}>
+                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                  {metric.icon}
+                  <Typography variant="h4">{metric.value}</Typography>
+                </Box>
+                <Box>
+                  <Typography variant="subtitle1" gutterBottom>
+                    {metric.title}
+                  </Typography>
+                  <Typography variant="caption" color="text.secondary">
+                    {metric.trend}
+                  </Typography>
+                </Box>
+                <LinearProgress
+                  variant="determinate"
+                  value={metric.progress}
+                  sx={{ height: 8, borderRadius: 2 }}
+                />
+              </Stack>
+            </CardContent>
+          </Card>
         ))}
-      </Grid>
+      </Box>
 
       {/* Course Analytics */}
       <Paper sx={{ p: 3, mb: 4 }}>
         <Typography variant="h6" gutterBottom>Course Analytics</Typography>
-        <Grid container spacing={3}>
+        <Box sx={{ 
+          display: 'grid',
+          gridTemplateColumns: {
+            xs: '1fr',
+            sm: '1fr 1fr',
+            md: 'repeat(4, 1fr)'
+          },
+          gap: 3
+        }}>
           {courseAnalytics.map((course, index) => (
-            <Grid item xs={12} sm={6} md={3} key={index}>
-              <Box>
-                <Typography variant="subtitle1" gutterBottom>
-                  {course.course}
-                </Typography>
-                <Stack spacing={1}>
-                  <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
-                    <Typography variant="body2">Enrolled</Typography>
-                    <Typography variant="body2">{course.enrolled}</Typography>
-                  </Box>
-                  <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
-                    <Typography variant="body2">Active</Typography>
-                    <Typography variant="body2">{course.active}</Typography>
-                  </Box>
-                  <Box>
-                    <Typography variant="body2" gutterBottom>
-                      Completion Rate: {course.completion}%
-                    </Typography>
-                    <LinearProgress
-                      variant="determinate"
-                      value={course.completion}
-                      sx={{ height: 6, borderRadius: 1 }}
-                    />
-                  </Box>
-                </Stack>
-              </Box>
-            </Grid>
+            <Box key={index}>
+              <Typography variant="subtitle1" gutterBottom>
+                {course.course}
+              </Typography>
+              <Stack spacing={1}>
+                <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
+                  <Typography variant="body2">Enrolled</Typography>
+                  <Typography variant="body2">{course.enrolled}</Typography>
+                </Box>
+                <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
+                  <Typography variant="body2">Active</Typography>
+                  <Typography variant="body2">{course.active}</Typography>
+                </Box>
+                <Box>
+                  <Typography variant="body2" gutterBottom>
+                    Completion Rate: {course.completion}%
+                  </Typography>
+                  <LinearProgress
+                    variant="determinate"
+                    value={course.completion}
+                    sx={{ height: 6, borderRadius: 1 }}
+                  />
+                </Box>
+              </Stack>
+            </Box>
           ))}
-        </Grid>
+        </Box>
       </Paper>
 
       {/* Student Progress */}
       <Paper sx={{ p: 3 }}>
         <Typography variant="h6" gutterBottom>Overall Student Progress</Typography>
-        <Grid container spacing={3}>
+        <Box sx={{ 
+          display: 'grid',
+          gridTemplateColumns: {
+            xs: '1fr',
+            sm: '1fr 1fr',
+            md: 'repeat(4, 1fr)'
+          },
+          gap: 3
+        }}>
           {studentProgress.map((progress, index) => (
-            <Grid item xs={12} sm={6} md={3} key={index}>
-              <Box>
-                <Typography variant="subtitle2" gutterBottom>
-                  {progress.metric}
+            <Box key={index}>
+              <Typography variant="subtitle2" gutterBottom>
+                {progress.metric}
+              </Typography>
+              <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
+                <Typography variant="body2">
+                  {progress.value} / {progress.total}
                 </Typography>
-                <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
-                  <Typography variant="body2">
-                    {progress.value} / {progress.total}
-                  </Typography>
-                  <Typography variant="body2" color="primary">
-                    {progress.percent}%
-                  </Typography>
-                </Box>
-                <LinearProgress
-                  variant="determinate"
-                  value={progress.percent}
-                  sx={{ height: 6, borderRadius: 1 }}
-                />
+                <Typography variant="body2" color="primary">
+                  {progress.percent}%
+                </Typography>
               </Box>
-            </Grid>
+              <LinearProgress
+                variant="determinate"
+                value={progress.percent}
+                sx={{ height: 6, borderRadius: 1 }}
+              />
+            </Box>
           ))}
-        </Grid>
+        </Box>
       </Paper>
     </Box>
   );
