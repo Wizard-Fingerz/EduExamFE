@@ -138,7 +138,7 @@ export const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
               arrow
             >
               <ListItemButton
-                selected={location.pathname === item.path}
+                selected={!!item.path && location.pathname === item.path}
                 onClick={() => {
                   navigate(item.path);
                   if (isMobile) setMobileOpen(false);
@@ -162,7 +162,7 @@ export const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
                     minWidth: 0,
                     mr: open ? 2 : 'auto',
                     justifyContent: 'center',
-                    color: location.pathname === item.path ? theme.palette.primary.main : 'inherit',
+                    color: !!item.path && location.pathname === item.path ? theme.palette.primary.main : 'inherit',
                   }}
                 >
                   {item.badge ? (
@@ -176,7 +176,7 @@ export const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
                     primary={item.text}
                     sx={{
                       '& .MuiTypography-root': {
-                        fontWeight: location.pathname === item.path ? 600 : 400,
+                        fontWeight: !!item.path && location.pathname === item.path ? 600 : 400,
                       }
                     }}
                   />
@@ -197,13 +197,23 @@ export const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
               arrow
             >
               <ListItemButton
-                onClick={item.onClick || (() => navigate(item.path))}
+                selected={!!item.path && location.pathname === item.path}
+                onClick={item.onClick || (() => {
+                  navigate(item.path);
+                  if (isMobile) setMobileOpen(false);
+                })}
                 sx={{
                   minHeight: 48,
                   justifyContent: open ? 'initial' : 'center',
                   px: 2.5,
                   borderRadius: 2,
                   mb: 0.5,
+                  '&.Mui-selected': {
+                    bgcolor: theme.palette.primary.main + '20',
+                    '&:hover': {
+                      bgcolor: theme.palette.primary.main + '30',
+                    }
+                  }
                 }}
               >
                 <ListItemIcon
@@ -211,11 +221,21 @@ export const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
                     minWidth: 0,
                     mr: open ? 2 : 'auto',
                     justifyContent: 'center',
+                    color: !!item.path && location.pathname === item.path ? theme.palette.primary.main : 'inherit',
                   }}
                 >
                   {item.icon}
                 </ListItemIcon>
-                {open && <ListItemText primary={item.text} />}
+                {open && (
+                  <ListItemText 
+                    primary={item.text}
+                    sx={{
+                      '& .MuiTypography-root': {
+                        fontWeight: !!item.path && location.pathname === item.path ? 600 : 400,
+                      }
+                    }}
+                  />
+                )}
               </ListItemButton>
             </Tooltip>
           ))}
@@ -293,7 +313,9 @@ export const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
             <MenuIcon />
           </IconButton>
           <Typography variant="h6" noWrap component="div" sx={{ flexGrow: 1, color: theme.palette.text.primary }}>
-            {mainMenuItems.find(item => item.path === location.pathname)?.text || 'Dashboard'}
+            {mainMenuItems.find(item => item.path === location.pathname)?.text || 
+             secondaryMenuItems.find(item => item.path === location.pathname)?.text || 
+             'Dashboard'}
           </Typography>
           <Stack direction="row" spacing={1}>
             <IconButton sx={{ bgcolor: theme.palette.background.paper }}>
