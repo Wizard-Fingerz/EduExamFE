@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Box,
   Paper,
@@ -29,7 +29,7 @@ interface LoginFormData {
 }
 
 export const Login: React.FC = () => {
-  const { login } = useAuth();
+  const { login, isAuthenticated, user } = useAuth();
   const navigate = useNavigate();
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -39,6 +39,12 @@ export const Login: React.FC = () => {
     password: '',
     rememberMe: false,
   });
+
+  useEffect(() => {
+    if (isAuthenticated) {
+      navigate(user?.role === 'student' ? '/dashboard' : '/staff-dashboard');
+    }
+  }, [isAuthenticated, navigate, user]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value, checked } = e.target;

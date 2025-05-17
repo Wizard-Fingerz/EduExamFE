@@ -3,11 +3,10 @@ import { BrowserRouter, useRoutes } from 'react-router-dom';
 import { theme } from './theme';
 import { publicRoutes, protectedRoutes } from './routes';
 import { AuthProvider } from './context/AuthContext';
-import { useAuth } from './context/AuthContext';
 
 const AppRoutes = () => {
-  const { isAuthenticated } = useAuth();
-  const element = useRoutes(isAuthenticated ? protectedRoutes : publicRoutes);
+  const routes = [...publicRoutes, ...protectedRoutes];
+  const element = useRoutes(routes);
   return element;
 };
 
