@@ -18,7 +18,7 @@ import {
   Zoom,
   IconButton,
   Tooltip,
-  Skeleton,
+  // Skeleton,
   useTheme,
   CircularProgress,
 } from '@mui/material';
@@ -80,6 +80,7 @@ export const ExamList: React.FC = () => {
   const handleStartExam = async (examId: number) => {
     try {
       const attempt = await examService.startExam(examId);
+      console.log('Exam attempt started:', attempt);
       navigate(`/exam/${examId}`);
     } catch (err) {
       setError('Failed to start exam. Please try again.');

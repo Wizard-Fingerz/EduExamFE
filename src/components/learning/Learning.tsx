@@ -31,7 +31,7 @@ import {
 } from '@mui/icons-material';
 import progressService from '../../services/progressService';
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../../context/AuthContext';
+// import { useAuth } from '../../context/AuthContext';
 
 interface LearningMaterial {
   id: number;
@@ -54,7 +54,9 @@ export const Learning: React.FC = () => {
   const [learningMaterials, setLearningMaterials] = useState<LearningMaterial[]>([]);
   const [enrolledCourses, setEnrolledCourses] = useState<any[]>([]);
   const navigate = useNavigate();
-  const { user } = useAuth();
+  // const { user } = useAuth();
+
+  console.log(recentActivity)
 
   useEffect(() => {
     const fetchData = async () => {

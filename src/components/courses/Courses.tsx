@@ -34,11 +34,11 @@ import {
   Sort as SortIcon,
 } from '@mui/icons-material';
 import courseService, { Course } from '../../services/courseService';
-import { useNavigate } from 'react-router-dom';
+// import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 
 export const Courses: React.FC = () => {
-  const navigate = useNavigate();
+  // const navigate = useNavigate();
   const { user: currentUser } = useAuth();
   const [searchTerm, setSearchTerm] = useState('');
   const [filterAnchorEl, setFilterAnchorEl] = useState<null | HTMLElement>(null);
