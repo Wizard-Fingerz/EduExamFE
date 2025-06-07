@@ -1,5 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../../context/AuthContext';
+import examService, { Exam } from '../../services/examService';
+import progressService, { CourseProgress } from '../../services/progressService';
 import {
   Box,
   Paper,
@@ -18,6 +21,8 @@ import {
   CircularProgress,
   useTheme,
   useMediaQuery,
+  Alert,
+  Skeleton,
 } from '@mui/material';
 import {
   Assessment as AssessmentIcon,
@@ -31,45 +36,67 @@ import {
 } from '@mui/icons-material';
 
 export const Dashboard: React.FC = () => {
+  const { user } = useAuth();
   const navigate = useNavigate();
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const [bookmarkedExams, setBookmarkedExams] = useState<string[]>([]);
   const [selectedFilter, setSelectedFilter] = useState('all');
+  const [upcomingExams, setUpcomingExams] = useState<Exam[]>([]);
+  const [learningProgress, setLearningProgress] = useState<CourseProgress[]>([]);
+  const [stats, setStats] = useState({
+    upcomingExams: 0,
+    completedExams: 0,
+    averageScore: 0
+  });
 
-  const upcomingExams = [
-    {
-      id: 'math-101',
-      title: 'Algebra Fundamentals',
-      subject: 'Mathematics',
-      date: '2024-03-25',
-      timeLeft: '2 days',
-      difficulty: 'Medium',
-      duration: '2 hours',
-    },
-    {
-      id: 'science-101',
-      title: 'Basic Physics',
-      subject: 'Science',
-      date: '2024-03-27',
-      timeLeft: '4 days',
-      difficulty: 'Hard',
-      duration: '3 hours',
-    },
-  ];
+  useEffect(() => {
+    loadDashboardData();
+  }, []);
 
-  const learningProgress = [
-    { subject: 'Mathematics', progress: 65, trend: '+5%', lastActivity: '2 days ago' },
-    { subject: 'Science', progress: 45, trend: '+2%', lastActivity: '1 day ago' },
-    { subject: 'English', progress: 80, trend: '+8%', lastActivity: '3 days ago' },
-  ];
+  const loadDashboardData = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+
+      // Fetch upcoming exams
+      const exams = await examService.getExams();
+      // const exams = exams.results
+      const upcoming = exams.results.filter((exam: Exam) => new Date(exam.start_time) > new Date());
+      setUpcomingExams(upcoming);
+
+      // Fetch course progress
+      const progress = await Promise.all(
+        exams.results.map((exam: Exam) => progressService.getCourseProgress(exam.course.id))
+      );
+      setLearningProgress(progress);
+
+      // Calculate stats
+      const completedExams = exams.results.filter((exam: Exam) => 
+        progress.some(p => p.course === exam.course && p.progress_percentage === 100)
+      ).length;
+
+      const averageScore = progress.reduce((acc, curr) => acc + curr.progress_percentage, 0) / progress.length;
+
+      setStats({
+        upcomingExams: upcoming.length,
+        completedExams,
+        averageScore: Math.round(averageScore)
+      });
+
+    } catch (err) {
+      setError('Failed to load dashboard data. Please try again later.');
+      console.error('Dashboard data loading error:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleRefresh = () => {
-    setLoading(true);
-    // Simulate data refresh
-    setTimeout(() => setLoading(false), 1000);
+    loadDashboardData();
   };
 
   const toggleBookmark = (examId: string) => {
@@ -104,10 +131,10 @@ export const Dashboard: React.FC = () => {
           >
             <Box>
               <Typography variant={isMobile ? 'h5' : 'h4'} gutterBottom>
-                Welcome back, John!
+                Welcome back, {user?.first_name}!
               </Typography>
               <Typography variant="body1" color="text.secondary">
-                Continue your learning journey. You have upcoming exams that need attention.
+                Continue your learning journey. You have {stats.upcomingExams} upcoming exams that need attention.
               </Typography>
             </Box>
             <Stack direction="row" spacing={1}>
@@ -124,6 +151,12 @@ export const Dashboard: React.FC = () => {
             </Stack>
           </Stack>
         </Paper>
+
+        {error && (
+          <Alert severity="error" sx={{ mb: 3 }}>
+            {error}
+          </Alert>
+        )}
 
         <Menu
           anchorEl={anchorEl}
@@ -159,7 +192,7 @@ export const Dashboard: React.FC = () => {
                 <Stack direction="row" spacing={2} alignItems="center">
                   <TimerIcon color="primary" sx={{ fontSize: { xs: 32, sm: 40 } }} />
                   <Box>
-                    <Typography variant="h6">2</Typography>
+                    <Typography variant="h6">{stats.upcomingExams}</Typography>
                     <Typography variant="body2" color="text.secondary">
                       Upcoming Exams
                     </Typography>
@@ -178,7 +211,7 @@ export const Dashboard: React.FC = () => {
                 <Stack direction="row" spacing={2} alignItems="center">
                   <AssessmentIcon color="primary" sx={{ fontSize: { xs: 32, sm: 40 } }} />
                   <Box>
-                    <Typography variant="h6">15</Typography>
+                    <Typography variant="h6">{stats.completedExams}</Typography>
                     <Typography variant="body2" color="text.secondary">
                       Completed Exams
                     </Typography>
@@ -197,7 +230,7 @@ export const Dashboard: React.FC = () => {
                 <Stack direction="row" spacing={2} alignItems="center">
                   <TrendingUpIcon color="primary" sx={{ fontSize: { xs: 32, sm: 40 } }} />
                   <Box>
-                    <Typography variant="h6">75%</Typography>
+                    <Typography variant="h6">{stats.averageScore}%</Typography>
                     <Typography variant="body2" color="text.secondary">
                       Average Score
                     </Typography>
@@ -209,7 +242,7 @@ export const Dashboard: React.FC = () => {
 
           {/* Main Content */}
           <Box>
-            <Paper sx={{ p: { xs: 2, sm: 3 }, borderRadius: 2, height: '100%' }}>
+            <Paper sx={{ p: { xs: 2, sm: 3 }, borderRadius: 2, height: '100%', maxHeight: '500px', overflowY: 'auto' }}>
               <Stack 
                 direction={{ xs: 'column', sm: 'row' }} 
                 justifyContent="space-between" 
@@ -228,129 +261,142 @@ export const Dashboard: React.FC = () => {
                   size={isMobile ? "small" : "medium"}
                 />
               </Stack>
-              <Stack spacing={2}>
-                {upcomingExams.map((exam) => (
-                  <Card 
-                    key={exam.id} 
-                    variant="outlined" 
-                    sx={{ 
-                      borderRadius: 2,
-                      transition: 'all 0.2s',
-                      '&:hover': {
-                        boxShadow: 3,
-                        transform: 'translateY(-2px)'
-                      }
-                    }}
-                  >
-                    <CardContent>
-                      <Stack 
-                        direction={{ xs: 'column', sm: 'row' }} 
-                        alignItems={{ xs: 'flex-start', sm: 'center' }} 
-                        spacing={2}
-                      >
-                        <AssessmentIcon color="primary" />
-                        <Box sx={{ flexGrow: 1 }}>
-                          <Stack 
-                            direction={{ xs: 'column', sm: 'row' }} 
-                            alignItems={{ xs: 'flex-start', sm: 'center' }} 
-                            spacing={1}
-                            mb={{ xs: 1, sm: 0 }}
-                          >
-                            <Typography variant="subtitle1">{exam.title}</Typography>
-                            <Chip size="small" label={exam.difficulty} color="primary" variant="outlined" />
-                          </Stack>
-                          <Typography variant="body2" color="text.secondary">
-                            {exam.subject} • Due in {exam.timeLeft} • Duration: {exam.duration}
-                          </Typography>
-                        </Box>
+              {loading ? (
+                <Stack spacing={2}>
+                  {[1, 2].map((i) => (
+                    <Skeleton key={i} variant="rectangular" height={100} />
+                  ))}
+                </Stack>
+              ) : (
+                <Stack spacing={2}>
+                  {upcomingExams.map((exam) => (
+                    <Card 
+                      key={`exam-${exam.id}`} 
+                      variant="outlined" 
+                      sx={{ 
+                        borderRadius: 2,
+                        transition: 'all 0.2s',
+                        '&:hover': {
+                          boxShadow: 3,
+                          transform: 'translateY(-2px)'
+                        }
+                      }}
+                    >
+                      <CardContent>
                         <Stack 
-                          direction="row" 
-                          spacing={1}
-                          sx={{ 
-                            width: { xs: '100%', sm: 'auto' },
-                            justifyContent: { xs: 'flex-end', sm: 'flex-start' },
-                            mt: { xs: 1, sm: 0 }
-                          }}
+                          direction={{ xs: 'column', sm: 'row' }} 
+                          alignItems={{ xs: 'flex-start', sm: 'center' }} 
+                          spacing={2}
                         >
-                          <Tooltip title={bookmarkedExams.includes(exam.id) ? "Remove Bookmark" : "Bookmark Exam"}>
-                            <IconButton 
-                              size="small"
-                              onClick={() => toggleBookmark(exam.id)}
+                          <AssessmentIcon color="primary" />
+                          <Box sx={{ flexGrow: 1 }}>
+                            <Stack 
+                              direction={{ xs: 'column', sm: 'row' }} 
+                              alignItems={{ xs: 'flex-start', sm: 'center' }} 
+                              spacing={1}
+                              mb={{ xs: 1, sm: 0 }}
                             >
-                              {bookmarkedExams.includes(exam.id) ? <BookmarkFilledIcon color="primary" /> : <BookmarkIcon />}
-                            </IconButton>
-                          </Tooltip>
-                          <Tooltip title="Start Exam">
-                            <IconButton 
-                              color="primary"
-                              onClick={() => navigate(`/exam/${exam.id}`)}
-                            >
-                              <ArrowForwardIcon />
-                            </IconButton>
-                          </Tooltip>
+                              <Typography variant="subtitle1">{exam.title}</Typography>
+                              <Chip size="small" label={exam.duration} color="primary" variant="outlined" />
+                            </Stack>
+                            <Typography variant="body2" color="text.secondary">
+                              {exam.course.title} • Due in {new Date(exam.start_time).toLocaleDateString()} • Duration: {exam.duration} minutes
+                            </Typography>
+                          </Box>
+                          <Stack 
+                            direction="row" 
+                            spacing={1}
+                            sx={{ 
+                              width: { xs: '100%', sm: 'auto' },
+                              justifyContent: { xs: 'flex-end', sm: 'flex-start' },
+                              mt: { xs: 1, sm: 0 }
+                            }}
+                          >
+                            <Tooltip title={bookmarkedExams.includes(exam.id.toString()) ? "Remove Bookmark" : "Bookmark Exam"}>
+                              <IconButton 
+                                size="small"
+                                onClick={() => toggleBookmark(exam.id.toString())}
+                              >
+                                {bookmarkedExams.includes(exam.id.toString()) ? <BookmarkFilledIcon color="primary" /> : <BookmarkIcon />}
+                              </IconButton>
+                            </Tooltip>
+                            <Tooltip title="Start Exam">
+                              <IconButton 
+                                color="primary"
+                                onClick={() => navigate(`/exam/${exam.id}`)}
+                              >
+                                <ArrowForwardIcon />
+                              </IconButton>
+                            </Tooltip>
+                          </Stack>
                         </Stack>
-                      </Stack>
-                    </CardContent>
-                  </Card>
-                ))}
-                <Button 
-                  variant="outlined" 
-                  endIcon={<ArrowForwardIcon />}
-                  onClick={() => navigate('/exams')}
-                  sx={{ alignSelf: 'flex-start' }}
-                  fullWidth={isMobile}
-                >
-                  View All Exams
-                </Button>
-              </Stack>
+                      </CardContent>
+                    </Card>
+                  ))}
+                  <Button 
+                    variant="outlined" 
+                    endIcon={<ArrowForwardIcon />}
+                    onClick={() => navigate('/exams')}
+                    sx={{ alignSelf: 'flex-start' }}
+                    fullWidth={isMobile}
+                  >
+                    View All Exams
+                  </Button>
+                </Stack>
+              )}
             </Paper>
           </Box>
 
           {/* Progress Overview */}
           <Box>
-            <Paper sx={{ p: { xs: 2, sm: 3 }, borderRadius: 2, height: '100%' }}>
+            <Paper sx={{ p: { xs: 2, sm: 3 }, borderRadius: 2, height: '100%', maxHeight: '500px', overflowY: 'auto' }}>
               <Typography variant="h6" gutterBottom>
                 Learning Progress
               </Typography>
-              <Stack spacing={4}>
-                {learningProgress.map((subject) => (
-                  <Box key={subject.subject}>
-                    <Stack
-                      direction={{ xs: 'column', sm: 'row' }}
-                      justifyContent="space-between"
-                      alignItems={{ xs: 'flex-start', sm: 'center' }}
-                      sx={{ mb: 1 }}
-                      spacing={1}
-                    >
-                      <Typography variant="body2">{subject.subject}</Typography>
-                      <Stack direction="row" spacing={1} alignItems="center">
-                        <Chip 
-                          label={subject.trend} 
-                          size="small" 
-                          color={subject.trend.startsWith('+') ? 'success' : 'error'}
-                        />
-                        <Typography variant="body2" color="text.secondary">
-                          {subject.progress}%
-                        </Typography>
+              {loading ? (
+                <Stack spacing={4}>
+                  {[1, 2, 3].map((i) => (
+                    <Skeleton key={i} variant="rectangular" height={60} />
+                  ))}
+                </Stack>
+              ) : (
+                <Stack spacing={4}>
+                  {learningProgress.map((progress) => (
+                    <Box key={`progress-${progress.id}`}>
+                      <Stack
+                        direction={{ xs: 'column', sm: 'row' }}
+                        justifyContent="space-between"
+                        alignItems={{ xs: 'flex-start', sm: 'center' }}
+                        sx={{ mb: 1 }}
+                        spacing={1}
+                      >
+                        <Typography variant="body2">{progress.course.title}</Typography>
+                        <Stack direction="row" spacing={1} alignItems="center">
+                          <Chip 
+                            label={`${progress.progress_percentage}%`} 
+                            size="small" 
+                            color={progress.progress_percentage >= 80 ? 'success' : 'primary'}
+                          />
+                        </Stack>
                       </Stack>
-                    </Stack>
-                    <LinearProgress
-                      variant="determinate"
-                      value={subject.progress}
-                      sx={{ 
-                        height: 8, 
-                        borderRadius: 4,
-                        '& .MuiLinearProgress-bar': {
-                          transition: 'transform 0.5s ease-in-out'
-                        }
-                      }}
-                    />
-                    <Typography variant="caption" color="text.secondary" sx={{ mt: 0.5, display: 'block' }}>
-                      Last activity: {subject.lastActivity}
-                    </Typography>
-                  </Box>
-                ))}
-              </Stack>
+                      <LinearProgress
+                        variant="determinate"
+                        value={progress.progress_percentage}
+                        sx={{ 
+                          height: 8, 
+                          borderRadius: 4,
+                          '& .MuiLinearProgress-bar': {
+                            transition: 'transform 0.5s ease-in-out'
+                          }
+                        }}
+                      />
+                      <Typography variant="caption" color="text.secondary" sx={{ mt: 0.5, display: 'block' }}>
+                        Last activity: {new Date(progress.last_accessed).toLocaleDateString()}
+                      </Typography>
+                    </Box>
+                  ))}
+                </Stack>
+              )}
             </Paper>
           </Box>
         </Box>

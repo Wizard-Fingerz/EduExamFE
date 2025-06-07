@@ -241,10 +241,10 @@ export const StaffLayout: React.FC<StaffLayoutProps> = ({ children }) => {
             </Avatar>
             <Box sx={{ flexGrow: 1 }}>
               <Typography variant="subtitle1" fontWeight={600}>
-                {user?.name || 'Staff'}
+                {user?.first_name || 'Staff'}
               </Typography>
               <Typography variant="caption" color="text.secondary">
-                {user?.role === 'admin' ? 'Administrator' : 'Staff Member'}
+                {user?.user_type === 'teacher' ? 'Teacher' : 'Staff Member'}
               </Typography>
             </Box>
           </Stack>

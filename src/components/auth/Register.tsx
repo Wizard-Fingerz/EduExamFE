@@ -11,6 +11,10 @@ import {
   IconButton,
   Alert,
   CircularProgress,
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem,
 } from '@mui/material';
 import {
   Visibility,
@@ -21,10 +25,12 @@ import { useAuth } from '../../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 
 interface RegisterFormData {
-  name: string;
+  firstName: string;
+  lastName: string;
   email: string;
   password: string;
   confirmPassword: string;
+  userType: 'student' | 'teacher';
 }
 
 export const Register: React.FC = () => {
@@ -35,22 +41,24 @@ export const Register: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState<RegisterFormData>({
-    name: '',
+    firstName: '',
+    lastName: '',
     email: '',
     password: '',
     confirmPassword: '',
+    userType: 'student',
   });
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | { name?: string; value: unknown }>) => {
     const { name, value } = e.target;
     setFormData(prev => ({
       ...prev,
-      [name]: value,
+      [name as string]: value,
     }));
   };
 
   const validateForm = () => {
-    if (!formData.name || !formData.email || !formData.password || !formData.confirmPassword) {
+    if (!formData.firstName || !formData.lastName || !formData.email || !formData.password || !formData.confirmPassword) {
       setError('All fields are required');
       return false;
     }
@@ -76,7 +84,14 @@ export const Register: React.FC = () => {
     setLoading(true);
 
     try {
-      await register(formData.name, formData.email, formData.password);
+      await register(
+        formData.email,
+        formData.password,
+        formData.confirmPassword,
+        formData.firstName,
+        formData.lastName,
+        formData.userType
+      );
     } catch (err) {
       setError('Registration failed. Please try again.');
     } finally {
@@ -123,15 +138,26 @@ export const Register: React.FC = () => {
               </Alert>
             )}
 
-            <TextField
-              required
-              fullWidth
-              label="Full Name"
-              name="name"
-              value={formData.name}
-              onChange={handleChange}
-              autoComplete="name"
-            />
+            <Stack direction="row" spacing={2}>
+              <TextField
+                required
+                fullWidth
+                label="First Name"
+                name="firstName"
+                value={formData.firstName}
+                onChange={handleChange}
+                autoComplete="given-name"
+              />
+              <TextField
+                required
+                fullWidth
+                label="Last Name"
+                name="lastName"
+                value={formData.lastName}
+                onChange={handleChange}
+                autoComplete="family-name"
+              />
+            </Stack>
 
             <TextField
               required
@@ -143,6 +169,19 @@ export const Register: React.FC = () => {
               onChange={handleChange}
               autoComplete="email"
             />
+
+            <FormControl fullWidth>
+              <InputLabel>Account Type</InputLabel>
+              <Select
+                name="userType"
+                value={formData.userType}
+                label="Account Type"
+                onChange={handleChange}
+              >
+                <MenuItem value="student">Student</MenuItem>
+                <MenuItem value="teacher">Teacher</MenuItem>
+              </Select>
+            </FormControl>
 
             <TextField
               required

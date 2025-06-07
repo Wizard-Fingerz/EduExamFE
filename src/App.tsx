@@ -2,7 +2,7 @@ import { ThemeProvider } from '@mui/material';
 import { BrowserRouter, useRoutes } from 'react-router-dom';
 import { theme } from './theme';
 import { publicRoutes, protectedRoutes } from './routes';
-import { AuthProvider } from './context/AuthContext';
+import { AuthProvider, useAuth } from './context/AuthContext';
 
 const AppRoutes = () => {
   const routes = [...publicRoutes, ...protectedRoutes];

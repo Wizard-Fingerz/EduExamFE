@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Box,
   Typography,
@@ -6,9 +6,9 @@ import {
   CardContent,
   Stack,
   Chip,
-  LinearProgress,
+  // LinearProgress,
   IconButton,
-  Tooltip,
+  // Tooltip,
   Container,
   InputAdornment,
   TextField,
@@ -18,88 +18,58 @@ import {
   Fade,
   Zoom,
   Divider,
+  CircularProgress,
 } from '@mui/material';
 import {
   School as SchoolIcon,
-  PlayCircleOutline as PlayIcon,
+  // PlayCircleOutline as PlayIcon,
   Book as BookIcon,
-  Assignment as AssignmentIcon,
-  Timer as TimerIcon,
+  // Assignment as AssignmentIcon,
+  // Timer as TimerIcon,
   Search as SearchIcon,
   FilterList as FilterIcon,
   BookmarkBorder as BookmarkIcon,
   BookmarkAdded as BookmarkFilledIcon,
-  Share as ShareIcon,
+  // Share as ShareIcon,
   Sort as SortIcon,
 } from '@mui/icons-material';
-
-interface Course {
-  id: string;
-  title: string;
-  description: string;
-  progress: number;
-  duration: string;
-  level: 'Beginner' | 'Intermediate' | 'Advanced';
-  topics: string[];
-  materials: number;
-  instructor: string;
-  rating: number;
-  enrolled: number;
-  thumbnail: string;
-}
-
-const mockCourses: Course[] = [
-  {
-    id: 'math-fundamentals',
-    title: 'Mathematics Fundamentals',
-    description: 'Master core concepts in algebra, geometry, and arithmetic through interactive lessons and real-world applications',
-    progress: 45,
-    duration: '8 weeks',
-    level: 'Beginner',
-    topics: ['Algebra', 'Geometry', 'Arithmetic', 'Problem Solving'],
-    materials: 24,
-    instructor: 'Dr. Sarah Matthews',
-    rating: 4.8,
-    enrolled: 1250,
-    thumbnail: 'math-thumbnail.jpg'
-  },
-  {
-    id: 'physics-basics',
-    title: 'Introduction to Physics',
-    description: 'Explore the fascinating world of physics through hands-on experiments and comprehensive theoretical foundations',
-    progress: 30,
-    duration: '10 weeks',
-    level: 'Intermediate',
-    topics: ['Mechanics', 'Energy', 'Forces', 'Waves'],
-    materials: 32,
-    instructor: 'Prof. James Wilson',
-    rating: 4.6,
-    enrolled: 980,
-    thumbnail: 'physics-thumbnail.jpg'
-  },
-  {
-    id: 'english-composition',
-    title: 'English Composition',
-    description: 'Develop professional writing skills with focus on grammar, style, and effective communication',
-    progress: 65,
-    duration: '6 weeks',
-    level: 'Beginner',
-    topics: ['Grammar', 'Writing', 'Comprehension', 'Style'],
-    materials: 18,
-    instructor: 'Emma Thompson',
-    rating: 4.9,
-    enrolled: 1500,
-    thumbnail: 'english-thumbnail.jpg'
-  },
-];
+import courseService, { Course } from '../../services/courseService';
+import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../../context/AuthContext';
 
 export const Courses: React.FC = () => {
+  const navigate = useNavigate();
+  const { user: currentUser } = useAuth();
   const [searchTerm, setSearchTerm] = useState('');
   const [filterAnchorEl, setFilterAnchorEl] = useState<null | HTMLElement>(null);
   const [sortAnchorEl, setSortAnchorEl] = useState<null | HTMLElement>(null);
-  const [selectedLevel, setSelectedLevel] = useState<string>('all');
-  const [bookmarkedCourses, setBookmarkedCourses] = useState<string[]>([]);
+  const [selectedCategory, setSelectedCategory] = useState<string>('all');
+  const [bookmarkedCourses, setBookmarkedCourses] = useState<number[]>([]);
   const [sortBy, setSortBy] = useState<'popular' | 'newest' | 'rating'>('popular');
+  const [courses, setCourses] = useState<Course[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    loadCourses();
+  }, [searchTerm, selectedCategory]);
+
+  const loadCourses = async () => {
+    try {
+      setLoading(true);
+      const params: { search?: string; category?: string } = {};
+      if (searchTerm) params.search = searchTerm;
+      if (selectedCategory !== 'all') params.category = selectedCategory;
+      
+      const data = await courseService.getCourses(params);
+      setCourses(data.results);
+      setError(null);
+    } catch (err) {
+      setError('Failed to load courses. Please try again later.');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleFilterClick = (event: React.MouseEvent<HTMLElement>) => {
     setFilterAnchorEl(event.currentTarget);
@@ -109,9 +79,9 @@ export const Courses: React.FC = () => {
     setSortAnchorEl(event.currentTarget);
   };
 
-  const handleFilterClose = (level?: string) => {
-    if (level) {
-      setSelectedLevel(level);
+  const handleFilterClose = (category?: string) => {
+    if (category) {
+      setSelectedCategory(category);
     }
     setFilterAnchorEl(null);
   };
@@ -123,7 +93,7 @@ export const Courses: React.FC = () => {
     setSortAnchorEl(null);
   };
 
-  const toggleBookmark = (courseId: string) => {
+  const toggleBookmark = (courseId: number) => {
     setBookmarkedCourses(prev =>
       prev.includes(courseId)
         ? prev.filter(id => id !== courseId)
@@ -131,25 +101,41 @@ export const Courses: React.FC = () => {
     );
   };
 
-  const filteredCourses = mockCourses.filter(course => {
-    const matchesSearch = course.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      course.description.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesLevel = selectedLevel === 'all' || course.level.toLowerCase() === selectedLevel.toLowerCase();
-    return matchesSearch && matchesLevel;
-  });
+  const handleEnroll = async (courseId: number) => {
+    try {
+      await courseService.enrollInCourse(courseId);
+      // Refresh courses after enrollment
+      loadCourses();
+    } catch (err) {
+      setError('Failed to enroll in course. Please try again.');
+    }
+  };
 
-  const sortedCourses = [...filteredCourses].sort((a, b) => {
+  const handleUnenroll = async (courseId: number) => {
+    try {
+      await courseService.unenrollFromCourse(courseId);
+      // Refresh courses after unenrollment
+      loadCourses();
+    } catch (err) {
+      setError('Failed to unenroll from course. Please try again.');
+    }
+  };
+
+  const isEnrolled = (course: Course) => {
+    return course.students?.some(student => student.id === currentUser?.id) || false;
+  };
+
+  const sortedCourses = [...courses].sort((a, b) => {
     switch (sortBy) {
-      case 'popular':
-        return b.enrolled - a.enrolled;
-      case 'rating':
-        return b.rating - a.rating;
       case 'newest':
-        // Since we don't have a date field in our mock data, we'll use the ID as a proxy
-        // In a real application, you would sort by createdAt or similar field
-        return b.id.localeCompare(a.id);
+        return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+      case 'rating':
+        // Since we don't have ratings in our API yet, we'll sort by ID as a fallback
+        return b.id - a.id;
+      case 'popular':
       default:
-        return 0;
+        // Since we don't have enrollment count in our API yet, we'll sort by ID as a fallback
+        return b.id - a.id;
     }
   });
 
@@ -224,175 +210,106 @@ export const Courses: React.FC = () => {
                 open={Boolean(filterAnchorEl)}
                 onClose={() => handleFilterClose()}
               >
-                <MenuItem onClick={() => handleFilterClose('all')}>All Levels</MenuItem>
-                <MenuItem onClick={() => handleFilterClose('beginner')}>Beginner</MenuItem>
-                <MenuItem onClick={() => handleFilterClose('intermediate')}>Intermediate</MenuItem>
-                <MenuItem onClick={() => handleFilterClose('advanced')}>Advanced</MenuItem>
+                <MenuItem onClick={() => handleFilterClose('all')}>All Categories</MenuItem>
+                <MenuItem onClick={() => handleFilterClose('mathematics')}>Mathematics</MenuItem>
+                <MenuItem onClick={() => handleFilterClose('science')}>Science</MenuItem>
+                <MenuItem onClick={() => handleFilterClose('language')}>Language</MenuItem>
+                <MenuItem onClick={() => handleFilterClose('programming')}>Programming</MenuItem>
               </Menu>
             </Stack>
           </Stack>
 
-          <Box sx={{ 
-            display: 'grid',
-            gridTemplateColumns: {
-              xs: '1fr',
-              md: 'repeat(2, 1fr)',
-              lg: 'repeat(3, 1fr)'
-            },
-            gap: 3
-          }}>
-            {sortedCourses.map((course) => (
-              <Zoom in timeout={500} key={course.id}>
-                <Card 
-                  sx={{ 
-                    height: '100%',
-                    display: 'flex',
-                    flexDirection: 'column',
-                    transition: 'all 0.3s ease',
-                    '&:hover': {
-                      transform: 'translateY(-8px)',
-                      boxShadow: (theme) => theme.shadows[8],
-                    },
-                    borderRadius: 2,
-                    overflow: 'hidden',
-                  }}
-                >
-                  <Box 
+          {error && (
+            <Typography color="error" sx={{ mb: 2 }}>
+              {error}
+            </Typography>
+          )}
+
+          {loading ? (
+            <Box display="flex" justifyContent="center" alignItems="center" minHeight="200px">
+              <CircularProgress />
+            </Box>
+          ) : (
+            <Box sx={{ 
+              display: 'grid',
+              gridTemplateColumns: {
+                xs: '1fr',
+                md: 'repeat(2, 1fr)',
+                lg: 'repeat(3, 1fr)'
+              },
+              gap: 3
+            }}>
+              {sortedCourses.map((course) => (
+                <Zoom in timeout={500} key={course.id}>
+                  <Card 
                     sx={{ 
-                      height: 160, 
-                      bgcolor: 'primary.main',
-                      position: 'relative',
+                      height: '100%',
                       display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
+                      flexDirection: 'column',
+                      transition: 'transform 0.2s',
+                      '&:hover': {
+                        transform: 'translateY(-4px)',
+                        boxShadow: 3,
+                      },
                     }}
                   >
-                    <BookIcon sx={{ fontSize: 60, color: 'white', opacity: 0.8 }} />
-                    <Stack 
-                      direction="row" 
-                      spacing={1} 
-                      sx={{ 
-                        position: 'absolute', 
-                        top: 8, 
-                        right: 8 
-                      }}
-                    >
-                      <Tooltip title="Share Course">
-                        <IconButton size="small" sx={{ color: 'white' }}>
-                          <ShareIcon />
-                        </IconButton>
-                      </Tooltip>
-                      <Tooltip title={bookmarkedCourses.includes(course.id) ? "Remove Bookmark" : "Bookmark Course"}>
-                        <IconButton 
-                          size="small" 
-                          sx={{ color: 'white' }}
-                          onClick={() => toggleBookmark(course.id)}
-                        >
-                          {bookmarkedCourses.includes(course.id) ? <BookmarkFilledIcon /> : <BookmarkIcon />}
-                        </IconButton>
-                      </Tooltip>
-                    </Stack>
-                  </Box>
+                    <CardContent>
+                      <Stack spacing={2}>
+                        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                          <Typography variant="h6" component="h2" gutterBottom>
+                            {course.title}
+                          </Typography>
+                          <IconButton
+                            size="small"
+                            onClick={() => toggleBookmark(course.id)}
+                          >
+                            {bookmarkedCourses.includes(course.id) ? (
+                              <BookmarkFilledIcon color="primary" />
+                            ) : (
+                              <BookmarkIcon />
+                            )}
+                          </IconButton>
+                        </Box>
 
-                  <CardContent sx={{ flexGrow: 1, p: 3 }}>
-                    <Stack spacing={2}>
-                      <Stack spacing={1}>
-                        <Typography variant="h6" fontWeight="bold">
-                          {course.title}
-                        </Typography>
                         <Typography variant="body2" color="text.secondary">
-                          by {course.instructor}
+                          {course.description}
                         </Typography>
-                      </Stack>
 
-                      <Typography color="text.secondary" variant="body2">
-                        {course.description}
-                      </Typography>
+                        <Box>
+                          <Chip
+                            label={course.category}
+                            size="small"
+                            color="primary"
+                            variant="outlined"
+                          />
+                        </Box>
 
-                      <Stack direction="row" spacing={1} flexWrap="wrap">
-                        <Chip 
-                          size="small" 
-                          label={course.level}
-                          color={
-                            course.level === 'Advanced' 
-                              ? 'error' 
-                              : course.level === 'Intermediate' 
-                              ? 'warning' 
-                              : 'success'
-                          }
-                        />
-                        <Chip
-                          size="small"
-                          icon={<TimerIcon />}
-                          label={course.duration}
-                          variant="outlined"
-                        />
-                        <Chip
-                          size="small"
-                          icon={<AssignmentIcon />}
-                          label={`${course.materials} materials`}
-                          variant="outlined"
-                        />
-                      </Stack>
+                        <Divider />
 
-                      <Box>
-                        <Stack
-                          direction="row"
-                          justifyContent="space-between"
-                          alignItems="center"
-                          sx={{ mb: 1 }}
-                        >
-                          <Typography variant="body2" fontWeight="medium">
-                            Course Progress
-                          </Typography>
-                          <Typography variant="body2" color="primary">
-                            {course.progress}%
-                          </Typography>
-                        </Stack>
-                        <LinearProgress
-                          variant="determinate"
-                          value={course.progress}
-                          sx={{ 
-                            height: 8, 
-                            borderRadius: 4,
-                            bgcolor: 'action.hover',
-                          }}
-                        />
-                      </Box>
-
-                      <Divider />
-
-                      <Stack
-                        direction="row"
-                        justifyContent="space-between"
-                        alignItems="center"
-                      >
                         <Stack direction="row" spacing={2} alignItems="center">
-                          <Typography variant="body2" color="text.secondary">
-                            ⭐ {course.rating}
-                          </Typography>
-                          <Typography variant="body2" color="text.secondary">
-                            👥 {course.enrolled}
-                          </Typography>
+                          <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                            <BookIcon fontSize="small" sx={{ mr: 0.5 }} />
+                            <Typography variant="body2">
+                              {course.instructor.first_name} {course.instructor.last_name}
+                            </Typography>
+                          </Box>
                         </Stack>
+
                         <Button
-                          variant="contained"
-                          startIcon={<PlayIcon />}
-                          size="small"
-                          sx={{
-                            borderRadius: 2,
-                            textTransform: 'none',
-                          }}
+                          variant={isEnrolled(course) ? "outlined" : "contained"}
+                          color={isEnrolled(course) ? "error" : "primary"}
+                          fullWidth
+                          onClick={() => isEnrolled(course) ? handleUnenroll(course.id) : handleEnroll(course.id)}
                         >
-                          Continue
+                          {isEnrolled(course) ? "Unenroll" : "Enroll Now"}
                         </Button>
                       </Stack>
-                    </Stack>
-                  </CardContent>
-                </Card>
-              </Zoom>
-            ))}
-          </Box>
+                    </CardContent>
+                  </Card>
+                </Zoom>
+              ))}
+            </Box>
+          )}
         </Box>
       </Fade>
     </Container>

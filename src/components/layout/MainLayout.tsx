@@ -263,10 +263,10 @@ export const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
             </Avatar>
             <Box sx={{ flexGrow: 1 }}>
               <Typography variant="subtitle1" fontWeight={600}>
-                {user?.name || 'User'}
+                {user?.first_name || 'User'}
               </Typography>
               <Typography variant="caption" color="text.secondary">
-                Student
+                {user?.user_type === 'teacher' ? 'Teacher' : 'Student'}
               </Typography>
             </Box>
           </Stack>

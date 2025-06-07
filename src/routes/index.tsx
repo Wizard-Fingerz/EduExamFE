@@ -4,7 +4,7 @@ import { Register } from '../components/auth/Register';
 import { ForgotPassword } from '../components/auth/ForgotPassword';
 import { Dashboard } from '../components/dashboard/Dashboard';
 import { ExamList } from '../components/examination/ExamList';
-import { ExamPage } from '../components/examination/ExamPage';
+import { ExamPage } from '../components/exam/ExamPage';
 import { Courses } from '../components/courses/Courses';
 import { Learning } from '../components/learning/Learning';
 import { Progress } from '../components/progress/Progress';
@@ -26,7 +26,7 @@ import { useAuth } from '../context/AuthContext';
 // Helper component for role-based redirect
 const RoleBasedRedirect: React.FC = () => {
   const { user } = useAuth();
-  return user?.role === 'student' ? 
+  return user?.user_type === 'student' ? 
     <Navigate to="/dashboard" replace /> : 
     <Navigate to="/staff-dashboard" replace />;
 };

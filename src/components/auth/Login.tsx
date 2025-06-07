@@ -35,14 +35,14 @@ export const Login: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState<LoginFormData>({
-    email: '',
+    username: '',
     password: '',
     rememberMe: false,
   });
 
   useEffect(() => {
     if (isAuthenticated) {
-      navigate(user?.role === 'student' ? '/dashboard' : '/staff-dashboard');
+      navigate(user?.user_type === 'student' ? '/dashboard' : '/staff-dashboard');
     }
   }, [isAuthenticated, navigate, user]);
 
@@ -60,9 +60,9 @@ export const Login: React.FC = () => {
     setLoading(true);
 
     try {
-      await login(formData.email, formData.password);
+      await login(formData.username, formData.password);
     } catch (err) {
-      setError('Invalid email or password');
+      setError('Invalid username or password');
     } finally {
       setLoading(false);
     }
@@ -95,7 +95,7 @@ export const Login: React.FC = () => {
           <Stack spacing={3}>
             <Box textAlign="center">
               <Typography variant="h4" gutterBottom>
-                Welcome Back
+                {user ? `Welcome back, ${user.first_name}!` : 'Welcome Back'}
               </Typography>
               <Typography variant="body2" color="text.secondary">
                 Sign in to continue to your learning journey
@@ -111,12 +111,12 @@ export const Login: React.FC = () => {
             <TextField
               required
               fullWidth
-              label="Email Address"
-              name="email"
-              type="email"
-              value={formData.email}
+              label="Username"
+              name="username"
+              type="text"
+              value={formData.username}
               onChange={handleChange}
-              autoComplete="email"
+              autoComplete="username"
             />
 
             <TextField

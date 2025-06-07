@@ -1,87 +1,91 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import authService, { UserProfile } from '../services/authService';
 
 interface AuthContextType {
   isAuthenticated: boolean;
   login: (email: string, password: string) => Promise<void>;
-  register: (name: string, email: string, password: string) => Promise<void>;
+  register: (email: string, password: string, password2: string, firstName: string, lastName: string, userType: 'student' | 'teacher') => Promise<void>;
   logout: () => void;
   resetPassword: (email: string) => Promise<void>;
-  user: User | null;
+  user: UserProfile | null;
   isStaff: boolean;
-}
-
-interface User {
-  email: string;
-  name: string;
-  role: 'student' | 'staff' | 'admin';
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [user, setUser] = useState<User | null>(null);
+  const [user, setUser] = useState<UserProfile | null>(null);
   const navigate = useNavigate();
 
-  const isStaff = user?.role === 'staff' || user?.role === 'admin';
+  const isStaff = user?.user_type === 'teacher';
 
   // Check if user is already authenticated on mount
   useEffect(() => {
-    const token = localStorage.getItem('auth_token');
-    const savedUser = localStorage.getItem('user');
-    if (token && savedUser) {
-      setIsAuthenticated(true);
-      setUser(JSON.parse(savedUser));
-    } else {
-      // Only redirect to login if we're not on the register or forgot-password page
-      const path = window.location.pathname;
-      if (!path.includes('/register') && !path.includes('/forgot-password')) {
-        navigate('/login');
+    const checkAuth = async () => {
+      if (authService.isAuthenticated()) {
+        try {
+          const userProfile = await authService.getProfile();
+          setUser(userProfile);
+          setIsAuthenticated(true);
+        } catch (error) {
+          // If token is invalid, clear everything
+          authService.logout();
+          setIsAuthenticated(false);
+          setUser(null);
+          navigate('/login');
+        }
+      } else {
+        // Only redirect to login if we're not on the register or forgot-password page
+        const path = window.location.pathname;
+        if (!path.includes('/register') && !path.includes('/forgot-password')) {
+          navigate('/login');
+        }
       }
-    }
+    };
+
+    checkAuth();
   }, [navigate]);
 
-  const register = async (name: string, email: string, _password: string) => {
+  const register = async (
+    email: string,
+    password: string,
+    password2: string,
+    firstName: string,
+    lastName: string,
+    userType: 'student' | 'teacher'
+  ) => {
     try {
-      // TODO: Replace with actual API call
-      // Simulating API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      const response = await authService.register({
+        email,
+        password,
+        password2,
+        first_name: firstName,
+        last_name: lastName,
+        user_type: userType,
+      });
       
-      const user = { email, name, role: 'student' as const };
-      const token = 'dummy_token_' + Date.now(); // Generate a unique token
-      
-      localStorage.setItem('auth_token', token);
-      localStorage.setItem('user', JSON.stringify(user));
-      
-      setUser(user);
-      setIsAuthenticated(true);
-      navigate('/dashboard');
-    } catch (error) {
+      // After successful registration, log the user in with the generated username
+      await login(response.username, password);
+    } catch (error: any) {
+      if (error.response?.data) {
+        throw new Error(error.response.data.detail || 'Registration failed');
+      }
       throw new Error('Registration failed');
     }
   };
 
-  const login = async (email: string, _password: string) => {
+  const login = async (username: string, password: string) => {
     try {
-      // TODO: Replace with actual API call
-      // Simulating API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      // For demo purposes, if email contains 'staff' or 'admin', assign that role
-      let role: 'student' | 'staff' | 'admin' = 'student';
-      if (email.includes('staff')) {
-        role = 'staff';
-      } else if (email.includes('admin')) {
-        role = 'admin';
-      }
-      
-      const user = { email, name: email.split('@')[0], role };
-      localStorage.setItem('auth_token', 'dummy_token');
-      localStorage.setItem('user', JSON.stringify(user));
-      setUser(user);
+      await authService.login({ username, password });
+      const userProfile = await authService.getProfile();
+      console.log('User profile after login:', userProfile); // Debug log
+      setUser(userProfile);
       setIsAuthenticated(true);
-      navigate(role === 'student' ? '/dashboard' : '/staff-dashboard');
+      const isStudent = userProfile.user_type === 'student';
+      console.log('Is student?', isStudent); // Debug log
+      navigate(isStudent ? '/dashboard' : '/staff-dashboard');
     } catch (error) {
       throw new Error('Login failed');
     }
@@ -89,16 +93,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const resetPassword = async (_email: string) => {
     try {
-      // TODO: Replace with actual API call
-      // Simulating API call
+      // TODO: Implement password reset functionality
       await new Promise(resolve => setTimeout(resolve, 1500));
-      
-      // In a real implementation, this would:
-      // 1. Call your backend API to initiate password reset
-      // 2. Send a reset link to the user's email
-      // 3. Handle the reset token validation
-      // 4. Allow the user to set a new password
-      
       return Promise.resolve();
     } catch (error) {
       throw new Error('Password reset failed');
@@ -106,8 +102,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const logout = () => {
-    localStorage.removeItem('auth_token');
-    localStorage.removeItem('user');
+    authService.logout();
     setUser(null);
     setIsAuthenticated(false);
     navigate('/login');
