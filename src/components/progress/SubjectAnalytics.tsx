@@ -15,10 +15,7 @@ import {
 } from '@mui/material';
 import {
   CheckCircle as CheckIcon,
-  Schedule as ScheduleIcon,
-  Assessment as AssessmentIcon,
   TrendingUp as TrendingUpIcon,
-  Timer as TimerIcon,
 } from '@mui/icons-material';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 
@@ -46,6 +43,10 @@ export const SubjectAnalytics: React.FC<SubjectAnalyticsProps> = ({ subject, onC
     { date: 'Week 5', score: 82 },
   ];
 
+  console.log(onClose);
+  // Handle close action
+
+  
   return (
     <Box>
       <Paper sx={{ p: 3, mb: 3 }}>

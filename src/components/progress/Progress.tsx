@@ -17,8 +17,6 @@ import {
   Dialog,
   DialogTitle,
   DialogContent,
-  DialogActions,
-  Button,
   InputAdornment,
 } from '@mui/material';
 import {
@@ -29,7 +27,6 @@ import {
   Refresh as RefreshIcon,
   Search as SearchIcon,
   Sort as SortIcon,
-  FilterList as FilterIcon,
   Close as CloseIcon,
 } from '@mui/icons-material';
 import progressService from '../../services/progressService';
