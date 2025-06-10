@@ -15,6 +15,7 @@ import {
   InputLabel,
   Select,
   MenuItem,
+  SelectChangeEvent,
 } from '@mui/material';
 import {
   Visibility,
@@ -71,6 +72,14 @@ export const Register: React.FC = () => {
       return false;
     }
     return true;
+  };
+
+   const handleSelectChange = (event: SelectChangeEvent<'student' | 'teacher'>) => {
+    const { name, value } = event.target;
+    setFormData(prev => ({
+      ...prev,
+      [name as string]: value as 'student' | 'teacher',
+    }));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -176,7 +185,7 @@ export const Register: React.FC = () => {
                 name="userType"
                 value={formData.userType}
                 label="Account Type"
-                onChange={handleChange}
+                onChange={handleSelectChange}
               >
                 <MenuItem value="student">Student</MenuItem>
                 <MenuItem value="teacher">Teacher</MenuItem>
