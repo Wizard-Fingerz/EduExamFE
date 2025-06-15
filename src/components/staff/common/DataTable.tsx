@@ -57,7 +57,7 @@ interface DataTableProps {
 
 export const DataTable: React.FC<DataTableProps> = ({
   columns,
-  data,
+  data = [],
   onAdd,
   onEdit,
   onDelete,
@@ -71,6 +71,8 @@ export const DataTable: React.FC<DataTableProps> = ({
   const [openEditDialog, setOpenEditDialog] = useState(false);
   const [formData, setFormData] = useState<any>({});
   const [editingItem, setEditingItem] = useState<any>(null);
+
+  const tableData = Array.isArray(data) ? data : [];
 
   const handleChangePage = (_event: unknown, newPage: number) => {
     setPage(newPage);
@@ -156,7 +158,7 @@ export const DataTable: React.FC<DataTableProps> = ({
 
       {isMobile ? (
         <Stack spacing={2}>
-          {data
+          {tableData
             .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
             .map((row, index) => renderMobileView(row, index))}
         </Stack>
@@ -179,7 +181,7 @@ export const DataTable: React.FC<DataTableProps> = ({
                 </TableRow>
               </TableHead>
               <TableBody>
-                {data
+                {tableData
                   .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
                   .map((row, index) => (
                     <TableRow hover role="checkbox" tabIndex={-1} key={index}>
@@ -211,7 +213,7 @@ export const DataTable: React.FC<DataTableProps> = ({
           <TablePagination
             rowsPerPageOptions={[10, 25, 100]}
             component="div"
-            count={data.length}
+            count={tableData.length}
             rowsPerPage={rowsPerPage}
             page={page}
             onPageChange={handleChangePage}

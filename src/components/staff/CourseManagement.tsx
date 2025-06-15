@@ -38,6 +38,28 @@ export const CourseManagement: React.FC = () => {
   const formFields = [
     { id: 'title', label: 'Course Title' },
     { id: 'description', label: 'Description', multiline: true },
+    { 
+      id: 'category', 
+      label: 'Category', 
+      type: 'select',
+      options: [
+        { value: 'mathematics', label: 'Mathematics' },
+        { value: 'science', label: 'Science' },
+        { value: 'language', label: 'Language' },
+        { value: 'programming', label: 'Programming' }
+      ]
+    },
+    { 
+      id: 'level', 
+      label: 'Level', 
+      type: 'select',
+      options: [
+        { value: 'beginner', label: 'Beginner' },
+        { value: 'intermediate', label: 'Intermediate' },
+        { value: 'advanced', label: 'Advanced' }
+      ]
+    },
+    { id: 'duration', label: 'Duration (hours)', type: 'number' },
     { id: 'price', label: 'Price', type: 'number' },
     { id: 'passing_score', label: 'Passing Score', type: 'number' },
     { id: 'is_published', label: 'Published', type: 'checkbox' },
