@@ -18,6 +18,7 @@ import {
   DialogActions,
   TextField,
   Stack,
+  MenuItem,
 } from '@mui/material';
 import {
   Edit as EditIcon,
@@ -39,7 +40,13 @@ interface DataTableProps {
   onAdd: (newItem: any) => void;
   onEdit: (editedItem: any) => void;
   onDelete: (item: any) => void;
-  addFormFields: { id: string; label: string; type?: string }[];
+  addFormFields: {
+    id: string;
+    label: string;
+    type?: string;
+    multiline?: boolean;
+    options?: { value: any; label: string }[];
+  }[];
 }
 
 export const DataTable: React.FC<DataTableProps> = ({
@@ -169,16 +176,45 @@ export const DataTable: React.FC<DataTableProps> = ({
         <DialogContent>
           <Stack spacing={2} sx={{ mt: 2 }}>
             {addFormFields.map((field) => (
-              <TextField
-                key={field.id}
-                label={field.label}
-                type={field.type || 'text'}
-                value={formData[field.id] || ''}
-                onChange={(e) =>
-                  setFormData({ ...formData, [field.id]: e.target.value })
-                }
-                fullWidth
-              />
+              field.type === 'select' ? (
+                <TextField
+                  key={field.id}
+                  select
+                  label={field.label}
+                  value={formData[field.id] || ''}
+                  onChange={(e) =>
+                    setFormData({ 
+                      ...formData, 
+                      [field.id]: e.target.value 
+                    })
+                  }
+                  fullWidth
+                >
+                  {field.options?.map((option) => (
+                    <MenuItem key={option.value} value={option.value}>
+                      {option.label}
+                    </MenuItem>
+                  ))}
+                </TextField>
+              ) : (
+                <TextField
+                  key={field.id}
+                  label={field.label}
+                  type={field.type || 'text'}
+                  value={formData[field.id] || ''}
+                  onChange={(e) =>
+                    setFormData({ 
+                      ...formData, 
+                      [field.id]: field.type === 'checkbox' 
+                        ? (e.target as HTMLInputElement).checked 
+                        : e.target.value 
+                    })
+                  }
+                  fullWidth
+                  multiline={field.type === 'multiline'}
+                  rows={field.type === 'multiline' ? 4 : undefined}
+                />
+              )
             ))}
           </Stack>
         </DialogContent>
@@ -196,16 +232,45 @@ export const DataTable: React.FC<DataTableProps> = ({
         <DialogContent>
           <Stack spacing={2} sx={{ mt: 2 }}>
             {addFormFields.map((field) => (
-              <TextField
-                key={field.id}
-                label={field.label}
-                type={field.type || 'text'}
-                value={formData[field.id] || ''}
-                onChange={(e) =>
-                  setFormData({ ...formData, [field.id]: e.target.value })
-                }
-                fullWidth
-              />
+              field.type === 'select' ? (
+                <TextField
+                  key={field.id}
+                  select
+                  label={field.label}
+                  value={formData[field.id] || ''}
+                  onChange={(e) =>
+                    setFormData({ 
+                      ...formData, 
+                      [field.id]: e.target.value 
+                    })
+                  }
+                  fullWidth
+                >
+                  {field.options?.map((option) => (
+                    <MenuItem key={option.value} value={option.value}>
+                      {option.label}
+                    </MenuItem>
+                  ))}
+                </TextField>
+              ) : (
+                <TextField
+                  key={field.id}
+                  label={field.label}
+                  type={field.type || 'text'}
+                  value={formData[field.id] || ''}
+                  onChange={(e) =>
+                    setFormData({ 
+                      ...formData, 
+                      [field.id]: field.type === 'checkbox' 
+                        ? (e.target as HTMLInputElement).checked 
+                        : e.target.value 
+                    })
+                  }
+                  fullWidth
+                  multiline={field.type === 'multiline'}
+                  rows={field.type === 'multiline' ? 4 : undefined}
+                />
+              )
             ))}
           </Stack>
         </DialogContent>

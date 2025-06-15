@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
-import { Box, Typography } from '@mui/material';
+import React, { useState, useEffect } from 'react';
+import { Box, Typography, Alert, CircularProgress } from '@mui/material';
 import { DataTable } from './common/DataTable';
+import staffService from '../../services/staffService';
 
 interface Assignment {
   id: string;
@@ -15,30 +16,28 @@ interface Assignment {
 }
 
 export const AssignmentManagement: React.FC = () => {
-  const [assignments, setAssignments] = useState<Assignment[]>([
-    {
-      id: '1',
-      title: 'Programming Basics Assignment',
-      courseId: 'CS101',
-      courseName: 'Introduction to Computer Science',
-      dueDate: '2024-03-20',
-      totalPoints: 100,
-      status: 'Published',
-      submissionCount: 45,
-      averageScore: 85.5,
-    },
-    {
-      id: '2',
-      title: 'Data Structures Project',
-      courseId: 'CS201',
-      courseName: 'Data Structures and Algorithms',
-      dueDate: '2024-04-01',
-      totalPoints: 150,
-      status: 'Draft',
-      submissionCount: 0,
-      averageScore: 0,
-    },
-  ]);
+  const [assignments, setAssignments] = useState<Assignment[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    fetchAssignments();
+  }, []);
+
+  const fetchAssignments = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      // Note: You'll need to add this method to staffService
+      const data = await staffService.getAssignments();
+      setAssignments(data);
+    } catch (err) {
+      console.error('Error fetching assignments:', err);
+      setError('Failed to load assignments. Please try again later.');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const columns = [
     { id: 'title', label: 'Assignment Title', minWidth: 200 },
@@ -75,31 +74,60 @@ export const AssignmentManagement: React.FC = () => {
     { id: 'status', label: 'Status' },
   ];
 
-  const handleAdd = (newAssignment: Omit<Assignment, 'id' | 'submissionCount' | 'averageScore'>) => {
-    const assignment: Assignment = {
-      ...newAssignment,
-      id: Date.now().toString(),
-      submissionCount: 0,
-      averageScore: 0,
-    };
-    setAssignments([...assignments, assignment]);
+  const handleAdd = async (newAssignment: Omit<Assignment, 'id' | 'submissionCount' | 'averageScore'>) => {
+    try {
+      // Note: You'll need to add this method to staffService
+      const createdAssignment = await staffService.createAssignment(newAssignment);
+      setAssignments([...assignments, createdAssignment]);
+    } catch (err) {
+      console.error('Error creating assignment:', err);
+      setError('Failed to create assignment. Please try again.');
+    }
   };
 
-  const handleEdit = (editedAssignment: Assignment) => {
-    setAssignments(assignments.map((assignment) => 
-      assignment.id === editedAssignment.id ? editedAssignment : assignment
-    ));
+  const handleEdit = async (editedAssignment: Assignment) => {
+    try {
+      // Note: You'll need to add this method to staffService
+      const updatedAssignment = await staffService.updateAssignment(editedAssignment.id, editedAssignment);
+      setAssignments(assignments.map((assignment) => 
+        assignment.id === editedAssignment.id ? updatedAssignment : assignment
+      ));
+    } catch (err) {
+      console.error('Error updating assignment:', err);
+      setError('Failed to update assignment. Please try again.');
+    }
   };
 
-  const handleDelete = (assignmentToDelete: Assignment) => {
-    setAssignments(assignments.filter((assignment) => assignment.id !== assignmentToDelete.id));
+  const handleDelete = async (assignmentToDelete: Assignment) => {
+    try {
+      // Note: You'll need to add this method to staffService
+      await staffService.deleteAssignment(assignmentToDelete.id);
+      setAssignments(assignments.filter((assignment) => assignment.id !== assignmentToDelete.id));
+    } catch (err) {
+      console.error('Error deleting assignment:', err);
+      setError('Failed to delete assignment. Please try again.');
+    }
   };
+
+  if (loading) {
+    return (
+      <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
+        <CircularProgress />
+      </Box>
+    );
+  }
 
   return (
     <Box>
       <Typography variant="h4" sx={{ mb: 4 }}>
         Assignment Management
       </Typography>
+
+      {error && (
+        <Alert severity="error" sx={{ mb: 4 }}>
+          {error}
+        </Alert>
+      )}
 
       <DataTable
         columns={columns}

@@ -152,6 +152,10 @@ export const Dashboard: React.FC = () => {
           </Stack>
         </Paper>
 
+        <Alert severity="info" sx={{ mb: 3 }}>
+          Your username is: {user?.username}
+        </Alert>
+
         {error && (
           <Alert severity="error" sx={{ mb: 3 }}>
             {error}

@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
-import { Box, Typography } from '@mui/material';
+import React, { useState, useEffect } from 'react';
+import { Box, Typography, Alert, CircularProgress } from '@mui/material';
 import { DataTable } from './common/DataTable';
+import staffService from '../../services/staffService';
 
 interface Student {
   id: string;
@@ -14,19 +15,9 @@ interface Student {
 }
 
 export const StudentManagement: React.FC = () => {
-  const [students, setStudents] = useState<Student[]>([
-    {
-      id: '1',
-      name: 'John Doe',
-      email: 'john.doe@example.com',
-      studentId: 'STU001',
-      enrollmentDate: '2024-01-15',
-      program: 'Computer Science',
-      status: 'Active',
-      gpa: 3.8,
-    },
-    // Add more sample data as needed
-  ]);
+  const [students, setStudents] = useState<Student[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   const columns = [
     { id: 'name', label: 'Name', minWidth: 170 },
@@ -72,20 +63,39 @@ export const StudentManagement: React.FC = () => {
     setStudents(students.filter((student) => student.id !== studentToDelete.id));
   };
 
+  useEffect(() => {
+    // Fetch students from the backend
+    staffService.getStudents()
+      .then((data) => {
+        setStudents(data);
+        setLoading(false);
+      })
+      .catch((err) => {
+        setError(err.message);
+        setLoading(false);
+      });
+  }, []);
+
   return (
     <Box>
       <Typography variant="h4" sx={{ mb: 4 }}>
         Student Management
       </Typography>
 
-      <DataTable
-        columns={columns}
-        data={students}
-        onAdd={handleAdd}
-        onEdit={handleEdit}
-        onDelete={handleDelete}
-        addFormFields={formFields}
-      />
+      {loading ? (
+        <CircularProgress />
+      ) : error ? (
+        <Alert severity="error">{error}</Alert>
+      ) : (
+        <DataTable
+          columns={columns}
+          data={students}
+          onAdd={handleAdd}
+          onEdit={handleEdit}
+          onDelete={handleDelete}
+          addFormFields={formFields}
+        />
+      )}
     </Box>
   );
 }; 
