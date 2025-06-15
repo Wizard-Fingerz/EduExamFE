@@ -171,7 +171,12 @@ export const DataTable: React.FC<DataTableProps> = ({
       </Paper>
 
       {/* Add Dialog */}
-      <Dialog open={openAddDialog} onClose={() => setOpenAddDialog(false)}>
+      <Dialog 
+        open={openAddDialog} 
+        onClose={() => setOpenAddDialog(false)}
+        maxWidth="md"
+        fullWidth
+      >
         <DialogTitle>Add New Item</DialogTitle>
         <DialogContent>
           <Stack spacing={2} sx={{ mt: 2 }}>
