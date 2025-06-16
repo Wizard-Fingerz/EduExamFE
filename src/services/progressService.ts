@@ -60,12 +60,38 @@ const progressService = {
 
   async getAllCourseProgress(): Promise<CourseProgress[]> {
     try {
+      console.log('Fetching all course progress...');
       const response = await api.get('/progress/courses/');
+      console.log('Course progress response:', response);
+      
+      if (!response.data) {
+        console.error('No data received from server');
+        return [];
+      }
+      
       // Handle paginated response
       const data = response.data.results || response.data;
-      return Array.isArray(data) ? data : [];
-    } catch (error) {
+      
+      if (!Array.isArray(data)) {
+        console.error('Invalid data format received:', data);
+        return [];
+      }
+      
+      // Ensure each course progress has the required fields
+      return data.map(progress => ({
+        ...progress,
+        progress_percentage: progress.progress_percentage || 0,
+        completed_lessons: progress.completed_lessons || [],
+        total_lessons: progress.total_lessons || 0,
+        is_completed: progress.is_completed || false,
+        last_accessed: progress.last_accessed || new Date().toISOString(),
+        completed_at: progress.completed_at || null
+      }));
+    } catch (error: any) {
       console.error('Error fetching all course progress:', error);
+      if (error.response) {
+        console.error('Error response:', error.response.data);
+      }
       return [];
     }
   },

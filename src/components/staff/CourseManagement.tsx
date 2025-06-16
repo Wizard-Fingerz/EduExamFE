@@ -16,8 +16,21 @@ export const CourseManagement: React.FC = () => {
     try {
       setLoading(true);
       setError(null);
-      const data = await staffService.getStaffCourses();
-      setCourses(data);
+      console.log('Fetching courses...');
+      const response = await staffService.getStaffCourses();
+      console.log('Received response:', response);
+      
+      // Check if response has results property (pagination) or is direct array
+      const coursesData = response.results || response;
+      console.log('Processed courses data:', coursesData);
+      
+      if (Array.isArray(coursesData)) {
+        console.log('Setting courses:', coursesData);
+        setCourses(coursesData);
+      } else {
+        console.error('Invalid courses data format:', coursesData);
+        setError('Invalid data format received from server');
+      }
     } catch (err) {
       console.error('Error fetching courses:', err);
       setError('Failed to load courses. Please try again later.');
@@ -29,10 +42,13 @@ export const CourseManagement: React.FC = () => {
   const columns = [
     { id: 'title', label: 'Title', minWidth: 200 },
     { id: 'description', label: 'Description', minWidth: 200 },
+    { id: 'category', label: 'Category', minWidth: 120 },
+    { id: 'level', label: 'Level', minWidth: 120 },
+    { id: 'duration', label: 'Duration (hrs)', minWidth: 100, align: 'right' as const },
     { id: 'price', label: 'Price', minWidth: 100, align: 'right' as const },
     { id: 'enrollment_count', label: 'Enrollments', minWidth: 100, align: 'right' as const },
-    { id: 'average_rating', label: 'Rating', minWidth: 100, align: 'right' as const },
-    { id: 'is_published', label: 'Status', minWidth: 100 },
+    { id: 'average_rating', label: 'Rating', minWidth: 50, align: 'right' as const },
+    { id: 'is_published', label: 'Status', minWidth: 50 },
   ];
 
   const formFields = [
@@ -67,8 +83,13 @@ export const CourseManagement: React.FC = () => {
 
   const handleAdd = async (newCourse: Partial<StaffCourse>) => {
     try {
+      setError(null);
       const createdCourse = await staffService.createCourse(newCourse);
-      setCourses([...courses, createdCourse]);
+      if (createdCourse) {
+        setCourses(prevCourses => [...prevCourses, createdCourse]);
+      } else {
+        throw new Error('No course data received from server');
+      }
     } catch (err) {
       console.error('Error creating course:', err);
       setError('Failed to create course. Please try again.');
@@ -77,10 +98,15 @@ export const CourseManagement: React.FC = () => {
 
   const handleEdit = async (editedCourse: StaffCourse) => {
     try {
+      setError(null);
       const updatedCourse = await staffService.updateCourse(editedCourse.id, editedCourse);
-      setCourses(courses.map((course) => 
-        course.id === editedCourse.id ? updatedCourse : course
-      ));
+      if (updatedCourse) {
+        setCourses(courses.map((course) => 
+          course.id === editedCourse.id ? updatedCourse : course
+        ));
+      } else {
+        throw new Error('No course data received from server');
+      }
     } catch (err) {
       console.error('Error updating course:', err);
       setError('Failed to update course. Please try again.');
@@ -89,6 +115,7 @@ export const CourseManagement: React.FC = () => {
 
   const handleDelete = async (courseToDelete: StaffCourse) => {
     try {
+      setError(null);
       await staffService.deleteCourse(courseToDelete.id);
       setCourses(courses.filter((course) => course.id !== courseToDelete.id));
     } catch (err) {

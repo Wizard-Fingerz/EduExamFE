@@ -43,6 +43,9 @@ export interface StaffCourse {
   price: number;
   enrollment_count: number;
   average_rating: number;
+  category: string;
+  level: string;
+  duration: number;
 }
 
 export interface StaffExam {
@@ -94,22 +97,65 @@ const staffService = {
 
   // Courses Management
   async getStaffCourses() {
-    const response = await api.get('/courses/staff/');
-    return response.data;
+    try {
+      console.log('Fetching staff courses...');
+      const response = await api.get('/courses/staff/');
+      console.log('Staff courses response:', response);
+      
+      if (!response.data) {
+        console.error('No data received from server');
+        throw new Error('No data received from server');
+      }
+      
+      return response.data;
+    } catch (error: any) {
+      console.error('Error fetching staff courses:', error);
+      if (error.response) {
+        console.error('Error response:', error.response.data);
+        throw new Error(error.response.data.detail || 'Failed to fetch courses');
+      }
+      throw error;
+    }
   },
 
   async createCourse(data: Partial<StaffCourse>) {
-    const response = await api.post('/courses/staff/create/', data);
-    return response.data;
+    try {
+      // Ensure required fields are present
+      if (!data.title || !data.description || !data.category || !data.level || !data.duration) {
+        throw new Error('Missing required fields: title, description, category, level, and duration are required');
+      }
+
+      const response = await api.post('/courses/staff/create/', data);
+      if (!response.data) {
+        throw new Error('No data received from server');
+      }
+      return response.data;
+    } catch (error) {
+      console.error('Error creating course:', error);
+      throw error;
+    }
   },
 
   async updateCourse(courseId: number, data: Partial<StaffCourse>) {
-    const response = await api.patch(`/courses/staff/${courseId}/update/`, data);
-    return response.data;
+    try {
+      const response = await api.patch(`/courses/staff/${courseId}/update/`, data);
+      if (!response.data) {
+        throw new Error('No data received from server');
+      }
+      return response.data;
+    } catch (error) {
+      console.error('Error updating course:', error);
+      throw error;
+    }
   },
 
   async deleteCourse(courseId: number) {
-    await api.delete(`/courses/staff/${courseId}/delete/`);
+    try {
+      await api.delete(`/courses/staff/${courseId}/delete/`);
+    } catch (error) {
+      console.error('Error deleting course:', error);
+      throw error;
+    }
   },
 
   async getCourseAnalytics(courseId: number) {
