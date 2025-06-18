@@ -84,6 +84,7 @@ export const DataTable: React.FC<DataTableProps> = ({
   };
 
   const handleAdd = () => {
+    console.log('DataTable handleAdd called with formData:', formData);
     onAdd(formData);
     setFormData({});
     setOpenAddDialog(false);

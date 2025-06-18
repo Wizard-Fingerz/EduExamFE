@@ -17,12 +17,35 @@ export const ExamManagement: React.FC = () => {
     try {
       setLoading(true);
       setError(null);
+      console.log('Fetching exam management data...');
+      
       const [examsResponse, coursesResponse] = await Promise.all([
         staffService.getStaffExams(),
         staffService.getStaffCourses()
       ]);
-      setExams(examsResponse.results || []);
-      setCourses(coursesResponse.results || []);
+      
+      console.log('Exams response:', examsResponse);
+      console.log('Courses response:', coursesResponse);
+      
+      // Handle exams data
+      const examsData = examsResponse.results || examsResponse;
+      if (Array.isArray(examsData)) {
+        setExams(examsData);
+      } else {
+        console.error('Invalid exams data format:', examsData);
+        setExams([]);
+      }
+      
+      // Handle courses data
+      const coursesData = Array.isArray(coursesResponse) ? coursesResponse : (coursesResponse as any)?.results;
+      if (Array.isArray(coursesData)) {
+        console.log('Setting courses:', coursesData);
+        setCourses(coursesData);
+      } else {
+        console.error('Invalid courses data format:', coursesData);
+        setCourses([]);
+      }
+      
     } catch (err) {
       console.error('Error fetching data:', err);
       setError('Failed to load data. Please try again later.');
@@ -80,13 +103,23 @@ export const ExamManagement: React.FC = () => {
     { id: 'is_published', label: 'Published', type: 'checkbox' },
   ];
 
+  console.log('Form fields with courses:', formFields);
+  console.log('Available courses:', courses);
+
   const handleAdd = async (newExam: Partial<StaffExam>) => {
     try {
+      console.log('handleAdd called with data:', newExam);
+      
       const examData = {
         ...newExam,
         is_published: Boolean(newExam.is_published)
       };
+      
+      console.log('Processed exam data being sent to backend:', examData);
+      
       const createdExam = await staffService.createExam(examData);
+      console.log('Created exam response:', createdExam);
+      
       setExams([...exams, createdExam]);
     } catch (err) {
       console.error('Error creating exam:', err);

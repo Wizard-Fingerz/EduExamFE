@@ -107,7 +107,16 @@ const staffService = {
         throw new Error('No data received from server');
       }
       
-      return response.data;
+      // Handle both array and paginated responses
+      const coursesData = response.data.results || response.data;
+      console.log('Processed courses data:', coursesData);
+      
+      if (!Array.isArray(coursesData)) {
+        console.error('Invalid courses data format:', coursesData);
+        throw new Error('Invalid data format received from server');
+      }
+      
+      return coursesData;
     } catch (error: any) {
       console.error('Error fetching staff courses:', error);
       if (error.response) {
@@ -170,8 +179,29 @@ const staffService = {
   },
 
   async createExam(data: Partial<StaffExam>) {
-    const response = await api.post(`/exams/staff/courses/${data.course}/exams/create/`, data);
-    return response.data;
+    try {
+      console.log('Creating exam with data:', data);
+      
+      if (!data.course) {
+        throw new Error('Course ID is required to create an exam');
+      }
+      
+      const response = await api.post(`/exams/staff/courses/${data.course}/exams/create/`, data);
+      console.log('Exam creation response:', response);
+      
+      if (!response.data) {
+        throw new Error('No data received from server');
+      }
+      
+      return response.data;
+    } catch (error: any) {
+      console.error('Error creating exam:', error);
+      if (error.response) {
+        console.error('Error response:', error.response.data);
+        throw new Error(error.response.data.detail || 'Failed to create exam');
+      }
+      throw error;
+    }
   },
 
   async updateExam(examId: number, data: Partial<StaffExam>) {

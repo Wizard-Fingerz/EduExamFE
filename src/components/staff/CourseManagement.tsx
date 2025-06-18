@@ -21,7 +21,7 @@ export const CourseManagement: React.FC = () => {
       console.log('Received response:', response);
       
       // Check if response has results property (pagination) or is direct array
-      const coursesData = response.results || response;
+      const coursesData = Array.isArray(response) ? response : (response as any).results;
       console.log('Processed courses data:', coursesData);
       
       if (Array.isArray(coursesData)) {
