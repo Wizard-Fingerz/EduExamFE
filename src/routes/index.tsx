@@ -14,9 +14,11 @@ import { MainLayout } from '../components/layout/MainLayout';
 import { StaffLayout } from '../components/layout/StaffLayout';
 import { StaffDashboard } from '../components/staff/StaffDashboard';
 import { ExamManagement } from '../components/staff/ExamManagement';
+import { ExamQuestionsManagement } from '../components/staff/ExamQuestionsManagement';
+import { AssignmentManagement } from '../components/staff/AssignmentManagement';
+import { AssignmentQuestionsManagement } from '../components/staff/AssignmentQuestionsManagement';
 import { CourseManagement } from '../components/staff/CourseManagement';
 import { StudentManagement } from '../components/staff/StudentManagement';
-import { AssignmentManagement } from '../components/staff/AssignmentManagement';
 import { AnalyticsDashboard } from '../components/staff/AnalyticsDashboard';
 import { AuthLayout } from '../components/auth/AuthLayout';
 import { ProtectedRoute } from '../components/auth/ProtectedRoute';
@@ -174,6 +176,36 @@ const staffRoutes: RouteObject[] = [
     ),
   },
   {
+    path: '/staff/exams/:examId/questions',
+    element: (
+      <ProtectedRoute>
+        <StaffLayout>
+          <ExamQuestionsManagement />
+        </StaffLayout>
+      </ProtectedRoute>
+    ),
+  },
+  {
+    path: '/staff/assignments',
+    element: (
+      <ProtectedRoute>
+        <StaffLayout>
+          <AssignmentManagement />
+        </StaffLayout>
+      </ProtectedRoute>
+    ),
+  },
+  {
+    path: '/staff/assignments/:assignmentId/questions',
+    element: (
+      <ProtectedRoute>
+        <StaffLayout>
+          <AssignmentQuestionsManagement />
+        </StaffLayout>
+      </ProtectedRoute>
+    ),
+  },
+  {
     path: '/staff/courses',
     element: (
       <ProtectedRoute>
@@ -189,16 +221,6 @@ const staffRoutes: RouteObject[] = [
       <ProtectedRoute>
         <StaffLayout>
           <StudentManagement />
-        </StaffLayout>
-      </ProtectedRoute>
-    ),
-  },
-  {
-    path: '/staff/assignments',
-    element: (
-      <ProtectedRoute>
-        <StaffLayout>
-          <AssignmentManagement />
         </StaffLayout>
       </ProtectedRoute>
     ),

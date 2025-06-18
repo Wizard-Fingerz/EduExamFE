@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { Box, Typography, Alert, CircularProgress } from '@mui/material';
+import { Box, Typography, Alert, CircularProgress, Button } from '@mui/material';
+import { Refresh as RefreshIcon } from '@mui/icons-material';
+import { useNavigate } from 'react-router-dom';
 import { DataTable } from './common/DataTable';
 import staffService, { StaffExam, StaffCourse } from '../../services/staffService';
 
@@ -8,6 +10,7 @@ export const ExamManagement: React.FC = () => {
   const [courses, setCourses] = useState<StaffCourse[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const navigate = useNavigate();
 
   useEffect(() => {
     fetchData();
@@ -30,7 +33,12 @@ export const ExamManagement: React.FC = () => {
       // Handle exams data
       const examsData = examsResponse.results || examsResponse;
       if (Array.isArray(examsData)) {
-        setExams(examsData);
+        // Ensure each exam has a questions property (even if empty)
+        const processedExams = examsData.map(exam => ({
+          ...exam,
+          questions: exam.questions || []
+        }));
+        setExams(processedExams);
       } else {
         console.error('Invalid exams data format:', examsData);
         setExams([]);
@@ -80,6 +88,25 @@ export const ExamManagement: React.FC = () => {
       label: 'Status', 
       minWidth: 100,
       format: (value: boolean) => value ? 'Published' : 'Draft'
+    },
+    {
+      id: 'questions',
+      label: 'Questions',
+      minWidth: 120,
+      align: 'center' as const,
+      format: (_value: any, row: any) => {
+        const questionCount = row.questions?.length || 0;
+        return (
+          <Button
+            variant="outlined"
+            size="small"
+            onClick={() => handleManageQuestions(row)}
+            sx={{ minWidth: 100 }}
+          >
+            Manage ({questionCount})
+          </Button>
+        );
+      }
     },
   ];
 
@@ -153,6 +180,46 @@ export const ExamManagement: React.FC = () => {
     }
   };
 
+  const handleManageQuestions = async (exam: StaffExam) => {
+    try {
+      // Fetch the latest exam data with questions if not already available
+      if (!exam.questions || exam.questions.length === 0) {
+        const examQuestions = await staffService.getExamQuestions(exam.id);
+        const updatedExam = { ...exam, questions: examQuestions };
+        // Update the exam in the local state
+        setExams(exams.map(e => e.id === exam.id ? updatedExam : e));
+      }
+      navigate(`/staff/exams/${exam.id}/questions`);
+    } catch (error) {
+      console.error('Error fetching exam questions:', error);
+      // Still navigate even if questions fetch fails
+      navigate(`/staff/exams/${exam.id}/questions`);
+    }
+  };
+
+  const refreshExamQuestions = async () => {
+    try {
+      setLoading(true);
+      const updatedExams = await Promise.all(
+        exams.map(async (exam) => {
+          try {
+            const questions = await staffService.getExamQuestions(exam.id);
+            return { ...exam, questions };
+          } catch (error) {
+            console.error(`Error fetching questions for exam ${exam.id}:`, error);
+            return { ...exam, questions: [] };
+          }
+        })
+      );
+      setExams(updatedExams);
+    } catch (error) {
+      console.error('Error refreshing exam questions:', error);
+      setError('Failed to refresh exam questions. Please try again.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   if (loading) {
     return (
       <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
@@ -163,9 +230,19 @@ export const ExamManagement: React.FC = () => {
 
   return (
     <Box>
-      <Typography variant="h4" sx={{ mb: 4 }}>
-        Exam Management
-      </Typography>
+      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 4 }}>
+        <Typography variant="h4">
+          Exam Management
+        </Typography>
+        <Button
+          variant="outlined"
+          startIcon={<RefreshIcon />}
+          onClick={refreshExamQuestions}
+          disabled={loading}
+        >
+          Refresh Questions
+        </Button>
+      </Box>
 
       {error && (
         <Alert severity="error" sx={{ mb: 4 }}>

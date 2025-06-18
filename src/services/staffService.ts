@@ -63,18 +63,22 @@ export interface StaffExam {
   updated_at: string;
   total_attempts: number;
   average_score: number;
+  questions?: any[];
 }
 
 export interface StaffAssignment {
-  id: string;
+  id: number;
   title: string;
-  courseId: string;
-  courseName: string;
-  dueDate: string;
-  totalPoints: number;
-  status: 'Draft' | 'Published' | 'Closed';
-  submissionCount: number;
-  averageScore: number;
+  description: string;
+  course: StaffCourse;
+  due_date: string;
+  total_points: number;
+  is_published: boolean;
+  created_at: string;
+  updated_at: string;
+  submission_count: number;
+  average_score: number;
+  questions?: any[];
 }
 
 const staffService = {
@@ -178,6 +182,11 @@ const staffService = {
     return response.data;
   },
 
+  async getStaffExam(examId: number) {
+    const response = await api.get(`/exams/staff/${examId}/`);
+    return response.data;
+  },
+
   async createExam(data: Partial<StaffExam>) {
     try {
       console.log('Creating exam with data:', data);
@@ -205,12 +214,73 @@ const staffService = {
   },
 
   async updateExam(examId: number, data: Partial<StaffExam>) {
-    const response = await api.patch(`/exams/staff/${examId}/update/`, data);
-    return response.data;
+    try {
+      const response = await api.patch(`/exams/staff/${examId}/update/`, data);
+      if (!response.data) {
+        throw new Error('No data received from server');
+      }
+      return response.data;
+    } catch (error: any) {
+      console.error('Error updating exam:', error);
+      if (error.response) {
+        console.error('Error response:', error.response.data);
+        throw new Error(error.response.data.detail || 'Failed to update exam');
+      }
+      throw error;
+    }
   },
 
   async deleteExam(examId: number) {
-    await api.delete(`/exams/staff/${examId}/delete/`);
+    try {
+      await api.delete(`/exams/staff/${examId}/delete/`);
+    } catch (error: any) {
+      console.error('Error deleting exam:', error);
+      if (error.response) {
+        console.error('Error response:', error.response.data);
+        throw new Error(error.response.data.detail || 'Failed to delete exam');
+      }
+      throw error;
+    }
+  },
+
+  // Exam Questions Management
+  async getExamQuestions(examId: number) {
+    try {
+      const response = await api.get(`/exams/staff/${examId}/questions/`);
+      return response.data;
+    } catch (error: any) {
+      console.error('Error fetching exam questions:', error);
+      return [];
+    }
+  },
+
+  async createExamQuestion(examId: number, questionData: any) {
+    try {
+      const response = await api.post(`/exams/staff/${examId}/questions/`, questionData);
+      return response.data;
+    } catch (error: any) {
+      console.error('Error creating exam question:', error);
+      throw error;
+    }
+  },
+
+  async updateExamQuestion(_examId: number, questionId: number, questionData: any) {
+    try {
+      const response = await api.patch(`/exams/staff/questions/${questionId}/`, questionData);
+      return response.data;
+    } catch (error: any) {
+      console.error('Error updating exam question:', error);
+      throw error;
+    }
+  },
+
+  async deleteExamQuestion(_examId: number, questionId: number) {
+    try {
+      await api.delete(`/exams/staff/questions/${questionId}/`);
+    } catch (error: any) {
+      console.error('Error deleting exam question:', error);
+      throw error;
+    }
   },
 
   async getExamAnalytics(examId: number) {
@@ -259,22 +329,123 @@ const staffService = {
 
   // Assignment Management
   async getAssignments() {
-    const response = await api.get('/courses/assignments/');
-    return response.data;
+    try {
+      const response = await api.get('/courses/staff/assignments/');
+      return response.data;
+    } catch (error: any) {
+      console.error('Error fetching assignments:', error);
+      if (error.response) {
+        console.error('Error response:', error.response.data);
+        throw new Error(error.response.data.detail || 'Failed to fetch assignments');
+      }
+      throw error;
+    }
+  },
+
+  async getStaffAssignment(assignmentId: number) {
+    try {
+      const response = await api.get(`/courses/staff/assignments/${assignmentId}/`);
+      return response.data;
+    } catch (error: any) {
+      console.error('Error fetching assignment:', error);
+      throw error;
+    }
   },
 
   async createAssignment(data: Partial<StaffAssignment>) {
-    const response = await api.post('/courses/assignments/create/', data);
-    return response.data;
+    try {
+      console.log('Creating assignment with data:', data);
+      
+      if (!data.course) {
+        throw new Error('Course ID is required to create an assignment');
+      }
+      
+      const response = await api.post(`/courses/staff/courses/${data.course}/assignments/create/`, data);
+      console.log('Assignment creation response:', response);
+      
+      if (!response.data) {
+        throw new Error('No data received from server');
+      }
+      
+      return response.data;
+    } catch (error: any) {
+      console.error('Error creating assignment:', error);
+      if (error.response) {
+        console.error('Error response:', error.response.data);
+        throw new Error(error.response.data.detail || 'Failed to create assignment');
+      }
+      throw error;
+    }
   },
 
   async updateAssignment(assignmentId: string, data: Partial<StaffAssignment>) {
-    const response = await api.patch(`/courses/assignments/${assignmentId}/update/`, data);
-    return response.data;
+    try {
+      const response = await api.patch(`/courses/staff/assignments/${assignmentId}/update/`, data);
+      if (!response.data) {
+        throw new Error('No data received from server');
+      }
+      return response.data;
+    } catch (error: any) {
+      console.error('Error updating assignment:', error);
+      if (error.response) {
+        console.error('Error response:', error.response.data);
+        throw new Error(error.response.data.detail || 'Failed to update assignment');
+      }
+      throw error;
+    }
   },
 
   async deleteAssignment(assignmentId: string) {
-    await api.delete(`/courses/assignments/${assignmentId}/delete/`);
+    try {
+      await api.delete(`/courses/staff/assignments/${assignmentId}/delete/`);
+    } catch (error: any) {
+      console.error('Error deleting assignment:', error);
+      if (error.response) {
+        console.error('Error response:', error.response.data);
+        throw new Error(error.response.data.detail || 'Failed to delete assignment');
+      }
+      throw error;
+    }
+  },
+
+  // Assignment Questions Management
+  async getAssignmentQuestions(assignmentId: number) {
+    try {
+      const response = await api.get(`/courses/staff/assignments/${assignmentId}/questions/`);
+      return response.data;
+    } catch (error: any) {
+      console.error('Error fetching assignment questions:', error);
+      return [];
+    }
+  },
+
+  async createAssignmentQuestion(assignmentId: number, questionData: any) {
+    try {
+      const response = await api.post(`/courses/staff/assignments/${assignmentId}/questions/`, questionData);
+      return response.data;
+    } catch (error: any) {
+      console.error('Error creating assignment question:', error);
+      throw error;
+    }
+  },
+
+  async updateAssignmentQuestion(_assignmentId: number, questionId: number, questionData: any) {
+    try {
+      const response = await api.patch(`/courses/staff/assignment-questions/${questionId}/`, questionData);
+      return response.data;
+    } catch (error: any) {
+      console.error('Error updating assignment question:', error);
+      throw error;
+    }
+  },
+
+  async deleteAssignmentQuestion(_assignmentId: number, questionId: number) {
+    try {
+      await api.delete(`/courses/staff/assignment-questions/${questionId}/`);
+    } catch (error: any) {
+      console.error('Error deleting assignment question:', error);
+      throw error;
+    }
   },
 
   async getAssignmentSubmissions(assignmentId: string) {
