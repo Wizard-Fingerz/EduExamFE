@@ -112,7 +112,7 @@ export const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
               WebkitTextFillColor: 'transparent',
             }}
           >
-            AdaptLearn
+            EduExam
           </Typography>
         )}
         <IconButton 

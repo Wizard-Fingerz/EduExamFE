@@ -114,7 +114,7 @@ export const StaffLayout: React.FC<StaffLayoutProps> = ({ children }) => {
               WebkitTextFillColor: 'transparent',
             }}
           >
-            AdaptLearn Staff
+            EduExam Staff
           </Typography>
         )}
         <IconButton 
