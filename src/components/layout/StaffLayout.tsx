@@ -16,21 +16,18 @@ import {
   useMediaQuery,
   Tooltip,
   Avatar,
-  Container,
   Badge,
   Divider,
 } from '@mui/material';
 import {
   Menu as MenuIcon,
   ChevronLeft as ChevronLeftIcon,
-  School as SchoolIcon,
   Dashboard as DashboardIcon,
-  Book as BookIcon,
+  
   Assessment as AssessmentIcon,
   Person as PersonIcon,
   Notifications as NotificationsIcon,
   Settings as SettingsIcon,
-  Timeline as TimelineIcon,
   LibraryBooks as LibraryBooksIcon,
   Assignment as AssignmentIcon,
   People as PeopleIcon,
@@ -69,12 +66,12 @@ export const StaffLayout: React.FC = () => {
   };
 
   const mainMenuItems = [
-    { text: 'Staff Dashboard', icon: <DashboardIcon />, path: '/staff/dashboard' },
-    { text: 'Manage Exams', icon: <AssessmentIcon />, path: '/staff/exams' },
-    { text: 'Manage Courses', icon: <LibraryBooksIcon />, path: '/staff/courses' },
-    { text: 'Assignments', icon: <AssignmentIcon />, path: '/staff/assignments' },
-    { text: 'Students', icon: <PeopleIcon />, path: '/staff/students' },
-    { text: 'Analytics', icon: <AnalyticsIcon />, path: '/staff/analytics' },
+    { text: 'Staff Dashboard', icon: <DashboardIcon />, path: '/staff/dashboard', badge: '' },
+    { text: 'Manage Exams', icon: <AssessmentIcon />, path: '/staff/exams',badge: '' },
+    { text: 'Manage Courses', icon: <LibraryBooksIcon />, path: '/staff/courses',badge: '' },
+    { text: 'Assignments', icon: <AssignmentIcon />, path: '/staff/assignments',badge: '' },
+    { text: 'Students', icon: <PeopleIcon />, path: '/staff/students',badge: '' },
+    { text: 'Analytics', icon: <AnalyticsIcon />, path: '/staff/analytics',badge: '' },
   ];
 
   const secondaryMenuItems = [
@@ -174,8 +171,8 @@ export const StaffLayout: React.FC = () => {
                     color: !!item.path && location.pathname === item.path ? theme.palette.primary.main : 'inherit',
                   }}
                 >
-                  {item.badge ? (
-                    <Badge badgeContent={item.badge} color="error">
+                  {item?.badge ? (
+                    <Badge badgeContent={item?.badge} color="error">
                       {item.icon}
                     </Badge>
                   ) : item.icon}

@@ -15,13 +15,13 @@ import {
   SelectChangeEvent,
 } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../../context/AuthContext';
+// import { useAuth } from '../../context/AuthContext';
 import api from '../../services/api';
 import examService from '../../services/examService';
 
 export const ProfileSetup: React.FC = () => {
   const navigate = useNavigate();
-  const { user } = useAuth();
+  // const { user } = useAuth();
   const [formData, setFormData] = useState({
     date_of_birth: '',
     profile_picture: null as File | null,

@@ -17,7 +17,6 @@ import {
   Fade,
   Zoom,
   IconButton,
-  Tooltip,
   Container,
   Divider,
   CircularProgress,
@@ -30,7 +29,7 @@ import {
   PlayArrow as StartIcon,
   Bookmark as BookmarkIcon,
   BookmarkBorder as BookmarkBorderIcon,
-  FilterList as FilterIcon,
+  // FilterList as FilterIcon,
 } from '@mui/icons-material';
 import examService, { Exam } from '../../services/examService';
 
@@ -42,6 +41,7 @@ export const ExamList: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [hoveredExam, setHoveredExam] = useState<number | null>(null);
+  console.log(hoveredExam);
   const [exams, setExams] = useState<Exam[]>([]);
 
   useEffect(() => {
@@ -83,6 +83,7 @@ export const ExamList: React.FC = () => {
   const handleStartExam = async (examId: number) => {
     try {
       const attempt = await examService.startExam(examId);
+      console.log(attempt)
       navigate(`/exam/${examId}`);
     } catch (err) {
       setError('Failed to start exam. Please try again.');

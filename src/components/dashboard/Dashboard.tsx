@@ -50,6 +50,7 @@ export const Dashboard: React.FC = () => {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const [bookmarkedExams, setBookmarkedExams] = useState<string[]>([]);
   const [selectedFilter, setSelectedFilter] = useState('all');
+  console.log(selectedFilter);
   const [upcomingExams, setUpcomingExams] = useState<Exam[]>([]);
   const [learningProgress, setLearningProgress] = useState<CourseProgress[]>([]);
   const [stats, setStats] = useState({
@@ -249,7 +250,7 @@ export const Dashboard: React.FC = () => {
             <ResponsiveContainer width="100%" height={250}>
               <PieChart>
                 <Pie data={examDistribution} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={80} label>
-                  {examDistribution.map((entry, index) => (
+                  {examDistribution.map((_entry, index) => (
                     <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                   ))}
                 </Pie>

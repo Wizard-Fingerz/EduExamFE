@@ -18,7 +18,7 @@ export interface Course {
 
 
 export interface Exam {
-  passing_score: ReactNode;
+  passing_score: any;
   subject: any;
   id: number;
   title: string;

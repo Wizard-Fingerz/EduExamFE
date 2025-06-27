@@ -1,11 +1,10 @@
 import React, { useEffect, useState } from 'react';
-import { Box, Button, Container, Stack, Typography, Paper, Grid, AppBar, Toolbar, IconButton, Link, CircularProgress, Avatar, Accordion, AccordionSummary, AccordionDetails } from '@mui/material';
+import { Box, Button, Container, Stack, Typography, Paper, Grid, AppBar, Toolbar, CircularProgress, Avatar, Accordion, AccordionSummary, AccordionDetails } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import SchoolIcon from '@mui/icons-material/School';
 import TrendingUpIcon from '@mui/icons-material/TrendingUp';
 import AssessmentIcon from '@mui/icons-material/Assessment';
 import EmojiEventsIcon from '@mui/icons-material/EmojiEvents';
-import MenuIcon from '@mui/icons-material/Menu';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import StarIcon from '@mui/icons-material/Star';
 import examService from '../services/examService';
