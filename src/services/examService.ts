@@ -18,6 +18,8 @@ export interface Course {
 
 
 export interface Exam {
+  passing_score: ReactNode;
+  subject: any;
   id: number;
   title: string;
   description: string;
@@ -106,6 +108,11 @@ const examService = {
 
   async getAttempt(attemptId: number) {
     const response = await api.get(`/exams/attempts/${attemptId}/`);
+    return response.data;
+  },
+
+  async fetchAllExamTypes() {
+    const response = await api.get('/users/examination-types/');
     return response.data;
   },
 };

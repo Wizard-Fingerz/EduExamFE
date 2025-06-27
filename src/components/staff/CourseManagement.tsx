@@ -1,12 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { Box, Typography, Alert, CircularProgress } from '@mui/material';
 import { DataTable } from './common/DataTable';
-import staffService, { StaffCourse } from '../../services/staffService';
+import staffService, { StaffCourse, StaffSubject } from '../../services/staffService';
 
 export const CourseManagement: React.FC = () => {
   const [courses, setCourses] = useState<StaffCourse[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [subjects, setSubjects] = useState<StaffSubject[]>([]);
 
   useEffect(() => {
     fetchCourses();
@@ -17,20 +18,36 @@ export const CourseManagement: React.FC = () => {
       setLoading(true);
       setError(null);
       console.log('Fetching courses...');
-      const response = await staffService.getStaffCourses();
-      console.log('Received response:', response);
+
+      const [subjectResponse, coursesResponse] = await Promise.all([
+        staffService.getStaffSubjects(),
+        staffService.getStaffCourses()
+      ]);
+
+      // Handle exams data
+      const examsData = subjectResponse;
+      if (Array.isArray(examsData)) {
+        // Ensure each exam has a questions property (even if empty)
+        const processedExams = examsData.map(exam => ({
+          ...exam,
+          questions: exam.questions || []
+        }));
+        setSubjects(processedExams);
+      } else {
+        console.error('Invalid exams data format:', examsData);
+        setSubjects([]);
+      }
       
-      // Check if response has results property (pagination) or is direct array
-      const coursesData = Array.isArray(response) ? response : (response as any).results;
-      console.log('Processed courses data:', coursesData);
-      
+      // Handle courses data
+      const coursesData = Array.isArray(coursesResponse) ? coursesResponse : (coursesResponse as any)?.results;
       if (Array.isArray(coursesData)) {
         console.log('Setting courses:', coursesData);
         setCourses(coursesData);
       } else {
         console.error('Invalid courses data format:', coursesData);
-        setError('Invalid data format received from server');
+        setCourses([]);
       }
+
     } catch (err) {
       console.error('Error fetching courses:', err);
       setError('Failed to load courses. Please try again later.');
@@ -58,12 +75,10 @@ export const CourseManagement: React.FC = () => {
       id: 'category', 
       label: 'Category', 
       type: 'select',
-      options: [
-        { value: 'mathematics', label: 'Mathematics' },
-        { value: 'science', label: 'Science' },
-        { value: 'language', label: 'Language' },
-        { value: 'programming', label: 'Programming' }
-      ]
+      options: subjects.map(subject => ({
+        value: subject.id,
+        label: subject.name
+      }))
     },
     { 
       id: 'level', 
@@ -133,7 +148,8 @@ export const CourseManagement: React.FC = () => {
   }
 
   return (
-    <Box>
+    
+    <Box sx={{ py: 4,  px: 2 }}>
       <Typography variant="h4" sx={{ mb: 4 }}>
         Course Management
       </Typography>

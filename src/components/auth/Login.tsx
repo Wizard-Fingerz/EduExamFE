@@ -42,7 +42,7 @@ export const Login: React.FC = () => {
 
   useEffect(() => {
     if (isAuthenticated) {
-      navigate(user?.user_type === 'student' ? '/dashboard' : '/staff-dashboard');
+      navigate(user?.user_type === 'student' ? '/dashboard' : '/staff/dashboard');
     }
   }, [isAuthenticated, navigate, user]);
 

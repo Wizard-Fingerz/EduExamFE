@@ -34,17 +34,13 @@ import {
   Logout as LogoutIcon,
   Help as HelpIcon,
 } from '@mui/icons-material';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate, useLocation, Outlet } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 
 const drawerWidth = 280;
 const collapsedDrawerWidth = 72;
 
-interface MainLayoutProps {
-  children: React.ReactNode;
-}
-
-export const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
+export const MainLayout: React.FC = () => {
   const [open, setOpen] = useState(true);
   const [mobileOpen, setMobileOpen] = useState(false);
   const theme = useTheme();
@@ -60,6 +56,8 @@ export const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
       setOpen(!open);
     }
   };
+
+  
 
   const mainMenuItems = [
     { text: 'Dashboard', icon: <DashboardIcon />, path: '/dashboard' },
@@ -290,7 +288,7 @@ export const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
   );
 
   return (
-    <Box sx={{ display: 'flex', minHeight: '100vh' }}>
+    <Box sx={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
       <CssBaseline />
       <AppBar
         position="fixed"
@@ -357,20 +355,25 @@ export const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
         </Drawer>
       </Box>
       <Box
-        component="main"
         sx={{
-          flexGrow: 1,
-          width: { sm: `calc(100% - ${open ? drawerWidth : collapsedDrawerWidth}px)` },
-          transition: theme.transitions.create(['width', 'margin'], {
+          flex: 1,
+          p: 0,
+          m: 0,
+          mt: 10,
+          transition: theme.transitions.create(['margin', 'width'], {
             easing: theme.transitions.easing.sharp,
-            duration: theme.transitions.duration.enteringScreen,
+            duration: theme.transitions.duration.leavingScreen,
           }),
+          width: {
+            xs: '100vw',
+            sm: open ? `calc(97vw - ${drawerWidth}px)` : `calc(97vw - ${collapsedDrawerWidth}px)`
+          },
+          ml: { sm: open ? `${drawerWidth}px` : `${collapsedDrawerWidth}px`, xs: 0 },
+          boxSizing: 'border-box',
+          overflowX: 'hidden',
         }}
       >
-        <Toolbar />
-        <Container maxWidth="xl" sx={{ py: 3, px: 2 }}>
-          {children}
-        </Container>
+        <Outlet />
       </Box>
     </Box>
   );

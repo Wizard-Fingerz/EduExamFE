@@ -62,7 +62,8 @@ export const AnalyticsDashboard: React.FC = () => {
   ];
 
   return (
-    <Box>
+ 
+    <Box sx={{ py: 4,  px: 2 }}>
       <Typography variant="h4" sx={{ mb: 4 }}>Analytics Dashboard</Typography>
 
       {/* Performance Metrics */}

@@ -198,7 +198,8 @@ export const AssignmentManagement: React.FC = () => {
   }
 
   return (
-    <Box>
+    
+    <Box sx={{ py: 4,  px: 2 }}>
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 4 }}>
         <Typography variant="h4">
           Assignment Management

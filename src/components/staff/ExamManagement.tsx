@@ -3,11 +3,14 @@ import { Box, Typography, Alert, CircularProgress, Button } from '@mui/material'
 import { Refresh as RefreshIcon } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 import { DataTable } from './common/DataTable';
-import staffService, { StaffExam, StaffCourse } from '../../services/staffService';
+import staffService, { StaffExam, StaffSubject } from '../../services/staffService';
+import examService from '../../services/examService';
+
 
 export const ExamManagement: React.FC = () => {
   const [exams, setExams] = useState<StaffExam[]>([]);
-  const [courses, setCourses] = useState<StaffCourse[]>([]);
+  const [subjects, setSubjects] = useState<StaffSubject[]>([]);
+  const [examTypes, setExamTypes] = useState<StaffSubject[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const navigate = useNavigate();
@@ -22,13 +25,14 @@ export const ExamManagement: React.FC = () => {
       setError(null);
       console.log('Fetching exam management data...');
       
-      const [examsResponse, coursesResponse] = await Promise.all([
+      const [examsResponse, subjectsResponse, examTypeResponse] = await Promise.all([
         staffService.getStaffExams(),
-        staffService.getStaffCourses()
+        staffService.getStaffSubjects(),
+        examService.fetchAllExamTypes()
       ]);
       
       console.log('Exams response:', examsResponse);
-      console.log('Courses response:', coursesResponse);
+      console.log('Subjects response:', subjectsResponse);
       
       // Handle exams data
       const examsData = examsResponse.results || examsResponse;
@@ -44,14 +48,28 @@ export const ExamManagement: React.FC = () => {
         setExams([]);
       }
       
-      // Handle courses data
-      const coursesData = Array.isArray(coursesResponse) ? coursesResponse : (coursesResponse as any)?.results;
-      if (Array.isArray(coursesData)) {
-        console.log('Setting courses:', coursesData);
-        setCourses(coursesData);
+      // Handle subjects data
+      const subjectsData = Array.isArray(subjectsResponse) ? subjectsResponse : (subjectsResponse as any)?.results;
+      if (Array.isArray(subjectsData)) {
+        console.log('Setting subjects:', subjectsData);
+        setSubjects(subjectsData);
       } else {
-        console.error('Invalid courses data format:', coursesData);
-        setCourses([]);
+        console.error('Invalid subjects data format:', subjectsData);
+        setSubjects([]);
+      }
+
+
+
+
+      
+      // Handle subjects data
+      const examTypesData = Array.isArray(examTypeResponse) ? examTypeResponse : (examTypeResponse as any)?.results;
+      if (Array.isArray(examTypesData)) {
+        console.log('Setting exam type:', examTypesData);
+        setExamTypes(examTypesData);
+      } else {
+        console.error('Invalid subjects data format:', subjectsData);
+        setExamTypes([]);
       }
       
     } catch (err) {
@@ -65,10 +83,37 @@ export const ExamManagement: React.FC = () => {
   const columns = [
     { id: 'title', label: 'Title', minWidth: 170 },
     { 
-      id: 'course', 
-      label: 'Course', 
+      id: 'subject', 
+      label: 'Subject', 
       minWidth: 130,
-      format: (value: any) => value?.title || 'N/A'
+      format: (value: any) => {
+        if (typeof value === 'object' && value?.name) return value.name;
+        if (typeof value === 'number') {
+          const subj = subjects.find(s => s.id === value);
+          return subj ? subj.name : 'N/A';
+        }
+        return 'N/A';
+      }
+    },
+    {
+      id: 'examination_type',
+      label: 'Examination Type',
+      minWidth: 100,
+      align: 'right' as const,
+      format: (value: any) => {
+        if (typeof value === 'object' && value?.name) return value.name;
+        if (typeof value === 'number') {
+          const type = examTypes.find(t => t.id === value);
+          return type ? type.name : value;
+        }
+        return value;
+      }
+    },
+    {
+      id: 'year',
+      label: 'Year',
+      minWidth: 100,
+      align: 'right' as const,
     },
     {
       id: 'duration',
@@ -114,14 +159,24 @@ export const ExamManagement: React.FC = () => {
     { id: 'title', label: 'Title' },
     { id: 'description', label: 'Description', type: 'multiline' },
     { 
-      id: 'course', 
-      label: 'Course', 
+      id: 'subject', 
+      label: 'Subject', 
       type: 'select',
-      options: courses.map(course => ({
-        value: course.id,
-        label: course.title
+      options: subjects.map(subject => ({
+        value: subject.id,
+        label: subject.name
       }))
     },
+    { 
+      id: 'examination_type', 
+      label: 'Exam Type', 
+      type: 'select',
+      options: examTypes.map(type => ({
+        value: type.id,
+        label: type.name
+      }))
+    },
+    { id: 'year', label: 'Year', type: 'number' },
     { id: 'duration', label: 'Duration (minutes)', type: 'number' },
     { id: 'total_marks', label: 'Total Marks', type: 'number' },
     { id: 'passing_marks', label: 'Passing Marks', type: 'number' },
@@ -130,8 +185,8 @@ export const ExamManagement: React.FC = () => {
     { id: 'is_published', label: 'Published', type: 'checkbox' },
   ];
 
-  console.log('Form fields with courses:', formFields);
-  console.log('Available courses:', courses);
+  console.log('Form fields with subjects:', formFields);
+  console.log('Available subjects:', subjects);
 
   const handleAdd = async (newExam: Partial<StaffExam>) => {
     try {
@@ -229,7 +284,8 @@ export const ExamManagement: React.FC = () => {
   }
 
   return (
-    <Box>
+   
+    <Box sx={{ py: 4,  px: 2 }}>
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 4 }}>
         <Typography variant="h4">
           Exam Management

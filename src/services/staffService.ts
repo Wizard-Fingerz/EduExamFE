@@ -48,11 +48,16 @@ export interface StaffCourse {
   duration: number;
 }
 
+export interface StaffSubject {
+  id: number;
+  name: string;
+}
+
 export interface StaffExam {
   id: number;
   title: string;
   description: string;
-  course: StaffCourse;
+  subject: StaffSubject;
   duration: number;
   total_marks: number;
   passing_marks: number;
@@ -131,6 +136,38 @@ const staffService = {
     }
   },
 
+  async getStaffSubjects() {
+    try {
+      console.log('Fetching staff subject...');
+      const response = await api.get('/courses/subjects/');
+      console.log('Staff subject response:', response);
+      
+      if (!response.data) {
+        console.error('No data received from server');
+        throw new Error('No data received from server');
+      }
+      
+      // Handle both array and paginated responses
+      const subjectsData = response.data.results || response.data;
+      console.log('Processed courses data:', subjectsData);
+      
+      if (!Array.isArray(subjectsData)) {
+        console.error('Invalid courses data format:', subjectsData);
+        throw new Error('Invalid data format received from server');
+      }
+      
+      return subjectsData;
+    } catch (error: any) {
+      console.error('Error fetching staff courses:', error);
+      if (error.response) {
+        console.error('Error response:', error.response.data);
+        throw new Error(error.response.data.detail || 'Failed to fetch courses');
+      }
+      throw error;
+    }
+  },
+
+
   async createCourse(data: Partial<StaffCourse>) {
     try {
       // Ensure required fields are present
@@ -191,11 +228,11 @@ const staffService = {
     try {
       console.log('Creating exam with data:', data);
       
-      if (!data.course) {
-        throw new Error('Course ID is required to create an exam');
+      if (!data.subject) {
+        throw new Error('Subject ID is required to create an exam');
       }
       
-      const response = await api.post(`/exams/staff/courses/${data.course}/exams/create/`, data);
+      const response = await api.post('/exams/create/', data);
       console.log('Exam creation response:', response);
       
       if (!response.data) {

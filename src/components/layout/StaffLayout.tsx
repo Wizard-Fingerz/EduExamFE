@@ -23,29 +23,35 @@ import {
 import {
   Menu as MenuIcon,
   ChevronLeft as ChevronLeftIcon,
+  School as SchoolIcon,
   Dashboard as DashboardIcon,
+  Book as BookIcon,
   Assessment as AssessmentIcon,
   Person as PersonIcon,
-  People as PeopleIcon,
   Notifications as NotificationsIcon,
   Settings as SettingsIcon,
-  Logout as LogoutIcon,
-  Help as HelpIcon,
+  Timeline as TimelineIcon,
   LibraryBooks as LibraryBooksIcon,
   Assignment as AssignmentIcon,
+  People as PeopleIcon,
   Analytics as AnalyticsIcon,
+  Logout as LogoutIcon,
+  Help as HelpIcon,
 } from '@mui/icons-material';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate, useLocation, Outlet } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
+// import DashboardIcon from '@mui/icons-material/Dashboard';
+// import AssessmentIcon from '@mui/icons-material/Assessment';
+// import LibraryBooksIcon from '@mui/icons-material/LibraryBooks';
+// import AssignmentIcon from '@mui/icons-material/Assignment';
+// import PeopleIcon from '@mui/icons-material/People';
+// import AnalyticsIcon from '@mui/icons-material/Analytics';
+
 
 const drawerWidth = 280;
 const collapsedDrawerWidth = 72;
 
-interface StaffLayoutProps {
-  children: React.ReactNode;
-}
-
-export const StaffLayout: React.FC<StaffLayoutProps> = ({ children }) => {
+export const StaffLayout: React.FC = () => {
   const [open, setOpen] = useState(true);
   const [mobileOpen, setMobileOpen] = useState(false);
   const theme = useTheme();
@@ -63,7 +69,7 @@ export const StaffLayout: React.FC<StaffLayoutProps> = ({ children }) => {
   };
 
   const mainMenuItems = [
-    { text: 'Staff Dashboard', icon: <DashboardIcon />, path: '/staff-dashboard' },
+    { text: 'Staff Dashboard', icon: <DashboardIcon />, path: '/staff/dashboard' },
     { text: 'Manage Exams', icon: <AssessmentIcon />, path: '/staff/exams' },
     { text: 'Manage Courses', icon: <LibraryBooksIcon />, path: '/staff/courses' },
     { text: 'Assignments', icon: <AssignmentIcon />, path: '/staff/assignments' },
@@ -83,6 +89,7 @@ export const StaffLayout: React.FC<StaffLayoutProps> = ({ children }) => {
       }
     },
   ];
+
 
   const drawer = (
     <Box 
@@ -114,7 +121,7 @@ export const StaffLayout: React.FC<StaffLayoutProps> = ({ children }) => {
               WebkitTextFillColor: 'transparent',
             }}
           >
-            EduExam Staff
+            EduExam
           </Typography>
         )}
         <IconButton 
@@ -140,7 +147,7 @@ export const StaffLayout: React.FC<StaffLayoutProps> = ({ children }) => {
               arrow
             >
               <ListItemButton
-                selected={location.pathname === item.path}
+                selected={!!item.path && location.pathname === item.path}
                 onClick={() => {
                   navigate(item.path);
                   if (isMobile) setMobileOpen(false);
@@ -164,17 +171,21 @@ export const StaffLayout: React.FC<StaffLayoutProps> = ({ children }) => {
                     minWidth: 0,
                     mr: open ? 2 : 'auto',
                     justifyContent: 'center',
-                    color: location.pathname === item.path ? theme.palette.primary.main : 'inherit',
+                    color: !!item.path && location.pathname === item.path ? theme.palette.primary.main : 'inherit',
                   }}
                 >
-                  {item.icon}
+                  {item.badge ? (
+                    <Badge badgeContent={item.badge} color="error">
+                      {item.icon}
+                    </Badge>
+                  ) : item.icon}
                 </ListItemIcon>
                 {open && (
                   <ListItemText 
                     primary={item.text}
                     sx={{
                       '& .MuiTypography-root': {
-                        fontWeight: location.pathname === item.path ? 600 : 400,
+                        fontWeight: !!item.path && location.pathname === item.path ? 600 : 400,
                       }
                     }}
                   />
@@ -195,13 +206,23 @@ export const StaffLayout: React.FC<StaffLayoutProps> = ({ children }) => {
               arrow
             >
               <ListItemButton
-                onClick={item.onClick || (() => navigate(item.path))}
+                selected={!!item.path && location.pathname === item.path}
+                onClick={item.onClick || (() => {
+                  navigate(item.path);
+                  if (isMobile) setMobileOpen(false);
+                })}
                 sx={{
                   minHeight: 48,
                   justifyContent: open ? 'initial' : 'center',
                   px: 2.5,
                   borderRadius: 2,
                   mb: 0.5,
+                  '&.Mui-selected': {
+                    bgcolor: theme.palette.primary.main + '20',
+                    '&:hover': {
+                      bgcolor: theme.palette.primary.main + '30',
+                    }
+                  }
                 }}
               >
                 <ListItemIcon
@@ -209,11 +230,21 @@ export const StaffLayout: React.FC<StaffLayoutProps> = ({ children }) => {
                     minWidth: 0,
                     mr: open ? 2 : 'auto',
                     justifyContent: 'center',
+                    color: !!item.path && location.pathname === item.path ? theme.palette.primary.main : 'inherit',
                   }}
                 >
                   {item.icon}
                 </ListItemIcon>
-                {open && <ListItemText primary={item.text} />}
+                {open && (
+                  <ListItemText 
+                    primary={item.text}
+                    sx={{
+                      '& .MuiTypography-root': {
+                        fontWeight: !!item.path && location.pathname === item.path ? 600 : 400,
+                      }
+                    }}
+                  />
+                )}
               </ListItemButton>
             </Tooltip>
           ))}
@@ -241,10 +272,10 @@ export const StaffLayout: React.FC<StaffLayoutProps> = ({ children }) => {
             </Avatar>
             <Box sx={{ flexGrow: 1 }}>
               <Typography variant="subtitle1" fontWeight={600}>
-                {user?.first_name || 'Staff'}
+                {user?.first_name || 'User'}
               </Typography>
               <Typography variant="caption" color="text.secondary">
-                {user?.user_type === 'teacher' ? 'Teacher' : 'Staff Member'}
+                {user?.user_type === 'teacher' ? 'Teacher' : 'Student'}
               </Typography>
             </Box>
           </Stack>
@@ -268,7 +299,7 @@ export const StaffLayout: React.FC<StaffLayoutProps> = ({ children }) => {
   );
 
   return (
-    <Box sx={{ display: 'flex', minHeight: '100vh' }}>
+    <Box sx={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
       <CssBaseline />
       <AppBar
         position="fixed"
@@ -291,7 +322,9 @@ export const StaffLayout: React.FC<StaffLayoutProps> = ({ children }) => {
             <MenuIcon />
           </IconButton>
           <Typography variant="h6" noWrap component="div" sx={{ flexGrow: 1, color: theme.palette.text.primary }}>
-            {mainMenuItems.find(item => item.path === location.pathname)?.text || 'Staff Dashboard'}
+            {mainMenuItems.find(item => item.path === location.pathname)?.text || 
+             secondaryMenuItems.find(item => item.path === location.pathname)?.text || 
+             'Dashboard'}
           </Typography>
           <Stack direction="row" spacing={1}>
             <IconButton sx={{ bgcolor: theme.palette.background.paper }}>
@@ -333,21 +366,26 @@ export const StaffLayout: React.FC<StaffLayoutProps> = ({ children }) => {
         </Drawer>
       </Box>
       <Box
-        component="main"
         sx={{
-          flexGrow: 1,
-          width: { sm: `calc(100% - ${open ? drawerWidth : collapsedDrawerWidth}px)` },
-          transition: theme.transitions.create(['width', 'margin'], {
+          flex: 1,
+          p: 0,
+          m: 0,
+          mt: 10,
+          transition: theme.transitions.create(['margin', 'width'], {
             easing: theme.transitions.easing.sharp,
-            duration: theme.transitions.duration.enteringScreen,
+            duration: theme.transitions.duration.leavingScreen,
           }),
+          width: {
+            xs: '100vw',
+            sm: open ? `calc(97vw - ${drawerWidth}px)` : `calc(97vw - ${collapsedDrawerWidth}px)`
+          },
+          ml: { sm: open ? `${drawerWidth}px` : `${collapsedDrawerWidth}px`, xs: 0 },
+          boxSizing: 'border-box',
+          overflowX: 'hidden',
         }}
       >
-        <Toolbar />
-        <Container maxWidth="xl" sx={{ py: 3, px: 2 }}>
-          {children}
-        </Container>
+        <Outlet />
       </Box>
     </Box>
   );
-}; 
+};

@@ -4,7 +4,7 @@ import authService, { UserProfile } from '../services/authService';
 
 interface AuthContextType {
   isAuthenticated: boolean;
-  login: (email: string, password: string) => Promise<void>;
+  login: (email: string, password: string, userTypeOverride?: 'student' | 'teacher') => Promise<void>;
   register: (email: string, password: string, password2: string, firstName: string, lastName: string, userType: 'student' | 'teacher') => Promise<void>;
   logout: () => void;
   resetPassword: (email: string) => Promise<void>;
@@ -37,9 +37,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           navigate('/login');
         }
       } else {
-        // Only redirect to login if we're not on the register or forgot-password page
+        // Only redirect to login if we're not on the landing, register, or forgot-password page
         const path = window.location.pathname;
-        if (!path.includes('/register') && !path.includes('/forgot-password')) {
+        if (
+          path !== '/' &&
+          !path.includes('/register') &&
+          !path.includes('/forgot-password')
+        ) {
           navigate('/login');
         }
       }
@@ -65,9 +69,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         last_name: lastName,
         user_type: userType,
       });
-      
       // After successful registration, log the user in with the generated username
-      await login(response.username, password);
+      await login(response.username, password, userType);
     } catch (error: any) {
       if (error.response?.data) {
         throw new Error(error.response.data.detail || 'Registration failed');
@@ -76,16 +79,19 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
-  const login = async (username: string, password: string) => {
+  const login = async (username: string, password: string, userTypeOverride?: 'student' | 'teacher') => {
     try {
       await authService.login({ username, password });
       const userProfile = await authService.getProfile();
-      console.log('User profile after login:', userProfile); // Debug log
       setUser(userProfile);
       setIsAuthenticated(true);
-      const isStudent = userProfile.user_type === 'student';
-      console.log('Is student?', isStudent); // Debug log
-      navigate(isStudent ? '/dashboard' : '/staff-dashboard');
+      const isStudent = (userTypeOverride || userProfile.user_type) === 'student';
+      // After registration, always redirect students to profile setup
+      if (isStudent && userTypeOverride) {
+        navigate('/profile-setup');
+      } else {
+        navigate(isStudent ? '/dashboard' : '/staff/dashboard');
+      }
     } catch (error) {
       throw new Error('Login failed');
     }

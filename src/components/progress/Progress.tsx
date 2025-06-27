@@ -176,10 +176,22 @@ export const Progress: React.FC = () => {
 
   if (loading) {
     return (
-      <Box>
-        <Typography variant="h4" gutterBottom>
-          Learning Progress
-        </Typography>
+  
+      <Box sx={{ py: 4,  px: 2 }}>
+        <Stack direction="row" alignItems="center" spacing={2} sx={{ mb: 6 }}>
+          <TrendingUpIcon sx={{ fontSize: 40 }} color="primary" />
+          <Typography
+            variant="h4"
+            fontWeight="bold"
+            sx={{
+              background: (theme) => `linear-gradient(45deg, ${theme.palette.primary.main}, ${theme.palette.secondary.main})`,
+              WebkitBackgroundClip: 'text',
+              WebkitTextFillColor: 'transparent',
+            }}
+          >
+            Learning Progress
+          </Typography>
+        </Stack>
         <Stack spacing={3}>
           <Skeleton variant="rectangular" height={120} />
           <Skeleton variant="rectangular" height={200} />
@@ -191,7 +203,8 @@ export const Progress: React.FC = () => {
 
   if (error) {
     return (
-      <Box>
+   
+      <Box sx={{ py: 4,  px: 2 }}>
         <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 3 }}>
           <Typography variant="h4">Learning Progress</Typography>
           <Tooltip title="Refresh">
@@ -208,32 +221,25 @@ export const Progress: React.FC = () => {
   }
 
   return (
-    <Box>
-      <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 3 }}>
-        <Typography variant="h4">Learning Progress</Typography>
-        <Tooltip title="Refresh">
-          <IconButton onClick={fetchProgressData} color="primary">
-            <RefreshIcon />
-          </IconButton>
-        </Tooltip>
+   
+    <Box sx={{ py: 4,  px: 2 }}>
+      <Stack direction="row" alignItems="center" spacing={2} sx={{ mb: 6 }}>
+        <TrendingUpIcon sx={{ fontSize: 40 }} color="primary" />
+        <Typography
+          variant="h4"
+          fontWeight="bold"
+          sx={{
+            background: (theme) => `linear-gradient(45deg, ${theme.palette.primary.main}, ${theme.palette.secondary.main})`,
+            WebkitBackgroundClip: 'text',
+            WebkitTextFillColor: 'transparent',
+          }}
+        >
+          Learning Progress
+        </Typography>
       </Stack>
 
       {/* Overall Stats */}
       <Stack direction="row" spacing={3} sx={{ mb: 4 }} useFlexGap flexWrap="wrap">
-        <Box flex={1} minWidth={240}>
-          <Paper sx={{ p: 3 }}>
-            <Stack spacing={2}>
-              <Stack direction="row" spacing={1} alignItems="center">
-                <TrendingUpIcon color="primary" />
-                <Typography variant="h6">Overall Progress</Typography>
-              </Stack>
-              <Typography variant="h4">{overallStats?.progress_percentage || 0}%</Typography>
-              <Typography variant="body2" color="text.secondary">
-                Across all subjects
-              </Typography>
-            </Stack>
-          </Paper>
-        </Box>
         <Box flex={1} minWidth={240}>
           <Paper sx={{ p: 3 }}>
             <Stack spacing={2}>

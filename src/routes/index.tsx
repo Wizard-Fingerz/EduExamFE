@@ -24,13 +24,15 @@ import { AuthLayout } from '../components/auth/AuthLayout';
 import { ProtectedRoute } from '../components/auth/ProtectedRoute';
 import { Navigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { ProfileSetup } from '../components/auth/ProfileSetup';
+import { LandingPage } from '../components/LandingPage';
 
 // Helper component for role-based redirect
 const RoleBasedRedirect: React.FC = () => {
   const { user } = useAuth();
   return user?.user_type === 'student' ? 
     <Navigate to="/dashboard" replace /> : 
-    <Navigate to="/staff-dashboard" replace />;
+    <Navigate to="/staff/dashboard" replace />;
 };
 
 // Public routes that don't require authentication
@@ -62,8 +64,14 @@ export const publicRoutes: RouteObject[] = [
   {
     path: '/',
     element: (
+      <LandingPage />
+    ),
+  },
+  {
+    path: '/profile-setup',
+    element: (
       <AuthLayout>
-        <Login />
+        <ProfileSetup />
       </AuthLayout>
     ),
   },
@@ -72,188 +80,46 @@ export const publicRoutes: RouteObject[] = [
 // Student routes
 const studentRoutes: RouteObject[] = [
   {
-    path: '/dashboard',
+    path: '/',
     element: (
       <ProtectedRoute>
-        <MainLayout>
-          <Dashboard />
-        </MainLayout>
+        <MainLayout />
       </ProtectedRoute>
     ),
-  },
-  {
-    path: '/exams',
-    element: (
-      <ProtectedRoute>
-        <MainLayout>
-          <ExamList />
-        </MainLayout>
-      </ProtectedRoute>
-    ),
-  },
-  {
-    path: '/exam/:examId',
-    element: (
-      <ProtectedRoute>
-        <MainLayout>
-          <ExamPage />
-        </MainLayout>
-      </ProtectedRoute>
-    ),
-  },
-  {
-    path: '/courses',
-    element: (
-      <ProtectedRoute>
-        <MainLayout>
-          <Courses />
-        </MainLayout>
-      </ProtectedRoute>
-    ),
-  },
-  {
-    path: '/learning',
-    element: (
-      <ProtectedRoute>
-        <MainLayout>
-          <Learning />
-        </MainLayout>
-      </ProtectedRoute>
-    ),
-  },
-  {
-    path: '/progress',
-    element: (
-      <ProtectedRoute>
-        <MainLayout>
-          <Progress />
-        </MainLayout>
-      </ProtectedRoute>
-    ),
-  },
-  {
-    path: '/settings',
-    element: (
-      <ProtectedRoute>
-        <MainLayout>
-          <Settings />
-        </MainLayout>
-      </ProtectedRoute>
-    ),
-  },
-  {
-    path: '/help',
-    element: (
-      <ProtectedRoute>
-        <MainLayout>
-          <HelpCenter />
-        </MainLayout>
-      </ProtectedRoute>
-    ),
+    children: [
+      { path: 'dashboard', element: <Dashboard /> },
+      { path: 'exams', element: <ExamList /> },
+      { path: 'exam/:examId', element: <ExamPage /> },
+      { path: 'courses', element: <Courses /> },
+      { path: 'learning', element: <Learning /> },
+      { path: 'progress', element: <Progress /> },
+      { path: 'settings', element: <Settings /> },
+      { path: 'help', element: <HelpCenter /> },
+    ],
   },
 ];
 
 // Staff routes
 const staffRoutes: RouteObject[] = [
   {
-    path: '/staff-dashboard',
+    path: '/staff',
     element: (
       <ProtectedRoute>
-        <StaffLayout>
-          <StaffDashboard />
-        </StaffLayout>
+        <StaffLayout />
       </ProtectedRoute>
     ),
-  },
-  {
-    path: '/staff/exams',
-    element: (
-      <ProtectedRoute>
-        <StaffLayout>
-          <ExamManagement />
-        </StaffLayout>
-      </ProtectedRoute>
-    ),
-  },
-  {
-    path: '/staff/exams/:examId/questions',
-    element: (
-      <ProtectedRoute>
-        <StaffLayout>
-          <ExamQuestionsManagement />
-        </StaffLayout>
-      </ProtectedRoute>
-    ),
-  },
-  {
-    path: '/staff/assignments',
-    element: (
-      <ProtectedRoute>
-        <StaffLayout>
-          <AssignmentManagement />
-        </StaffLayout>
-      </ProtectedRoute>
-    ),
-  },
-  {
-    path: '/staff/assignments/:assignmentId/questions',
-    element: (
-      <ProtectedRoute>
-        <StaffLayout>
-          <AssignmentQuestionsManagement />
-        </StaffLayout>
-      </ProtectedRoute>
-    ),
-  },
-  {
-    path: '/staff/courses',
-    element: (
-      <ProtectedRoute>
-        <StaffLayout>
-          <CourseManagement />
-        </StaffLayout>
-      </ProtectedRoute>
-    ),
-  },
-  {
-    path: '/staff/students',
-    element: (
-      <ProtectedRoute>
-        <StaffLayout>
-          <StudentManagement />
-        </StaffLayout>
-      </ProtectedRoute>
-    ),
-  },
-  {
-    path: '/staff/analytics',
-    element: (
-      <ProtectedRoute>
-        <StaffLayout>
-          <AnalyticsDashboard />
-        </StaffLayout>
-      </ProtectedRoute>
-    ),
-  },
-  {
-    path: '/staff/settings',
-    element: (
-      <ProtectedRoute>
-        <StaffLayout>
-          <Settings />
-        </StaffLayout>
-      </ProtectedRoute>
-    ),
-  },
-  {
-    path: '/staff/help',
-    element: (
-      <ProtectedRoute>
-        <StaffLayout>
-          <HelpCenter />
-        </StaffLayout>
-      </ProtectedRoute>
-    ),
+    children: [
+      { path: 'dashboard', element: <StaffDashboard /> },
+      { path: 'exams', element: <ExamManagement /> },
+      { path: 'exams/:examId/questions', element: <ExamQuestionsManagement /> },
+      { path: 'assignments', element: <AssignmentManagement /> },
+      { path: 'assignments/:assignmentId/questions', element: <AssignmentQuestionsManagement /> },
+      { path: 'courses', element: <CourseManagement /> },
+      { path: 'students', element: <StudentManagement /> },
+      { path: 'analytics', element: <AnalyticsDashboard /> },
+      { path: 'settings', element: <Settings /> },
+      { path: 'help', element: <HelpCenter /> },
+    ],
   },
 ];
 

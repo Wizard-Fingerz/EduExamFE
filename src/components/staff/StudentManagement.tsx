@@ -129,7 +129,7 @@ export const StudentManagement: React.FC = () => {
   }
 
   return (
-    <Box>
+    <Box sx={{ py: 4,  px: 2 }}>
       <Typography variant="h4" sx={{ mb: 4 }}>
         Student Management
       </Typography>

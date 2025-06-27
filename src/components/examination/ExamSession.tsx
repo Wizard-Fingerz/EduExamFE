@@ -147,7 +147,7 @@ export const ExamSessionComponent: React.FC<ExamSessionProps> = ({
             <Stack direction="row" spacing={1} flexWrap="wrap">
               <Chip
                 size="small"
-                label={`Difficulty: ${currentQuestion.difficulty}`}
+                label={`Difficulty: ${currentQuestion?.difficulty}`}
                 color={currentQuestion.difficulty > 3 ? 'error' : 'primary'}
               />
               <Chip

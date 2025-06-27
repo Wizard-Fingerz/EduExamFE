@@ -26,6 +26,9 @@ import {
   School as SchoolIcon,
   NavigateNext as NextIcon,
   NavigateBefore as PrevIcon,
+  ArrowBack,
+  Save as SaveIcon,
+  Check as SubmitIcon,
 } from '@mui/icons-material';
 import { useNavigate, useParams } from 'react-router-dom';
 // import { useAuth } from '../../context/AuthContext';
@@ -304,126 +307,98 @@ export const ExamPage: React.FC = () => {
     );
   }
 
+  const currentQ = examData?.questions[currentQuestion];
   return (
-    <Container maxWidth="md">
-      <Fade in timeout={800}>
-        <Box sx={{ py: 4 }}>
+    <Box sx={{ p: { xs: 1, sm: 2, md: 4 }, bgcolor: 'grey.50', minHeight: '100vh' }}>
+      {/* Header */}
+      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3, flexWrap: 'wrap', gap: 2 }}>
+        <Button variant="text" color="primary" sx={{ display: 'flex', alignItems: 'center' }} onClick={() => navigate(-1)}>
+          <ArrowBack sx={{ mr: 1 }} />
+          <Typography variant="body1">Back</Typography>
+        </Button>
+        <Box sx={{ display: 'flex', gap: 2 }}>
+          <Button variant="contained" color="success" startIcon={<SubmitIcon />} onClick={handleSubmitExam} disabled={submitting}>
+            {submitting ? 'Submitting...' : 'Submit Exam'}
+          </Button>
+          <Button variant="contained" color="success" startIcon={<SaveIcon />}>Save & Exit</Button>
+        </Box>
+      </Box>
+
+      {/* Main Content */}
+      <Box sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' }, justifyContent: 'space-between', mb: 3, gap: { xs: 3, md: 0 } }}>
+        {/* Left: Question Area */}
+        <Box sx={{ width: { xs: '100%', md: '50vw' }, bgcolor: 'white', p: { xs: 1, sm: 3 }, borderRadius: 2, boxShadow: 3, mx: 'auto', mb: { xs: 3, md: 0 } }}>
+          <Typography variant="h4">{examData?.title}</Typography>
+          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+            <Typography variant="h6">Question {currentQuestion + 1} / {examData?.totalQuestions}</Typography>
+          </Box>
           {error && (
-            <Alert severity="error" sx={{ mb: 3 }}>
-              {error}
-            </Alert>
+            <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>
           )}
-
-          <Paper 
-            elevation={0}
-            sx={{ 
-              p: 3, 
-              mb: 3, 
-              borderRadius: 2,
-              border: '1px solid',
-              borderColor: 'divider',
-              bgcolor: 'background.paper'
-            }}
-          >
-            <Stack direction="row" justifyContent="space-between" alignItems="center">
-              <Typography variant="h6">
-                Question {currentQuestion + 1} of {examData?.totalQuestions}
-              </Typography>
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                <TimerIcon color="primary" />
-                <Typography variant="h6" color="primary">
-                  {formatTime(timeLeft)}
-                </Typography>
-              </Box>
-            </Stack>
-          </Paper>
-
-          <Card>
-            <CardContent>
-              <Stack spacing={3}>
-                <Typography variant="h6">
-                  {examData?.questions[currentQuestion].text}
-                </Typography>
-
-                <FormControl component="fieldset">
-                  <RadioGroup
-                    value={answers[currentQuestion]}
-                    onChange={(e) => handleAnswerChange(currentQuestion, parseInt(e.target.value))}
-                  >
-                    {examData?.questions[currentQuestion]?.options?.map((option, index) => (
-                      <FormControlLabel
-                        key={index}
-                        value={index}
-                        control={<Radio />}
-                        label={option}
-                        sx={{
-                          p: 1,
-                          borderRadius: 1,
-                          '&:hover': {
-                            bgcolor: 'action.hover',
-                          },
-                        }}
-                      />
-                    ))}
-                  </RadioGroup>
-                </FormControl>
-              </Stack>
-            </CardContent>
-          </Card>
-
-          <Box sx={{ 
-            display: 'flex', 
-            justifyContent: 'space-between', 
-            mt: 3,
-            gap: 2
-          }}>
-            <Button
-              variant="outlined"
-              startIcon={<PrevIcon />}
-              onClick={handlePrevQuestion}
-              disabled={currentQuestion === 0}
+          <Typography variant="h6" sx={{ mb: 2 }}>{currentQ?.text}</Typography>
+          <FormControl component="fieldset" sx={{ width: '100%' }}>
+            <RadioGroup
+              value={answers[currentQuestion]}
+              onChange={(e) => handleAnswerChange(currentQuestion, parseInt(e.target.value))}
             >
+              {currentQ?.options?.map((option, index) => (
+                <FormControlLabel
+                  key={index}
+                  value={index}
+                  control={<Radio />}
+                  label={option}
+                  sx={{
+                    p: 1.5,
+                    borderRadius: 2,
+                    bgcolor: answers[currentQuestion] === index ? 'primary.50' : 'background.paper',
+                    boxShadow: answers[currentQuestion] === index ? 2 : 0,
+                    '&:hover': { bgcolor: 'action.hover' },
+                    transition: 'all 0.2s',
+                  }}
+                />
+              ))}
+            </RadioGroup>
+          </FormControl>
+          <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 3 }}>
+            <Button variant="contained" color="success" onClick={handlePrevQuestion} disabled={currentQuestion === 0}>
               Previous
             </Button>
-            {currentQuestion === (examData?.totalQuestions || 0) - 1 ? (
-              <Button
-                variant="contained"
-                color="primary"
-                onClick={handleSubmitExam}
-                disabled={submitting}
-              >
-                {submitting ? (
-                  <>
-                    <CircularProgress size={20} sx={{ mr: 1 }} />
-                    Submitting...
-                  </>
-                ) : (
-                  'Submit Exam'
-                )}
-              </Button>
-            ) : (
-              <Button
-                variant="contained"
-                endIcon={<NextIcon />}
-                onClick={handleNextQuestion}
-              >
-                Next
-              </Button>
-            )}
+            <Button variant="contained" color="success" onClick={handleNextQuestion} disabled={currentQuestion === (examData?.totalQuestions || 0) - 1}>
+              Next
+            </Button>
           </Box>
-
-          <Box sx={{ mt: 4 }}>
-            <Typography variant="body2" gutterBottom>
-              Progress
-            </Typography>
-            <LinearProgress
-              variant="determinate"
-              value={((currentQuestion + 1) / (examData?.totalQuestions || 1)) * 100}
-              sx={{ height: 8, borderRadius: 4 }}
-            />
+          {/* Question Navigation Grid */}
+          <Box sx={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between', mt: 5 }}>
+            {examData?.questions.map((q, idx) => (
+              <Button
+                key={q.id}
+                variant={answers[idx] !== -1 ? 'contained' : 'outlined'}
+                color={currentQuestion === idx ? 'primary' : answers[idx] !== -1 ? 'success' : 'secondary'}
+                sx={{ m: 0.5, minWidth: 40, minHeight: 40, borderRadius: '50%' }}
+                onClick={() => setCurrentQuestion(idx)}
+              >
+                {idx + 1}
+              </Button>
+            ))}
           </Box>
         </Box>
-      </Fade>
-    </Container>
+        {/* Right: Sidebar */}
+        <Box sx={{ pl: { xs: 0, md: 2 }, width: { xs: '100%', md: 'auto' }, minWidth: 220 }}>
+          <Paper sx={{ p: 3, mb: 3, textAlign: 'center', borderRadius: 2, boxShadow: 2 }}>
+            <Typography variant="h6" color="primary" sx={{ mb: 1 }}>Time Left</Typography>
+            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', mb: 1 }}>
+              <TimerIcon color="primary" sx={{ mr: 1 }} />
+              <Typography variant="h5" color="primary" fontWeight={700}>{formatTime(timeLeft)}</Typography>
+            </Box>
+            <LinearProgress variant="determinate" value={((timeLeft / ((examData?.duration || 1) * 60)) * 100)} sx={{ height: 8, borderRadius: 4 }} />
+          </Paper>
+          {/* Calculator placeholder */}
+          <Paper sx={{ p: 3, textAlign: 'center', borderRadius: 2, boxShadow: 2 }}>
+            <Typography variant="subtitle1" color="text.secondary">Calculator</Typography>
+            <Typography variant="caption" color="text.secondary">(Coming soon)</Typography>
+          </Paper>
+        </Box>
+      </Box>
+    </Box>
   );
 }; 

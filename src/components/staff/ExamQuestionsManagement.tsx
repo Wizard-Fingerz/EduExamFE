@@ -236,7 +236,8 @@ export const ExamQuestionsManagement: React.FC = () => {
   }
 
   return (
-    <Box>
+    
+    <Box sx={{ py: 4,  px: 2 }}>
       <Stack direction="row" alignItems="center" spacing={2} sx={{ mb: 4 }}>
         <IconButton onClick={() => navigate('/staff/exams')}>
           <ArrowBackIcon />

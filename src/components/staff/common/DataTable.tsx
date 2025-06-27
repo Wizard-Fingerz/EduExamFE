@@ -71,6 +71,7 @@ export const DataTable: React.FC<DataTableProps> = ({
   const [openEditDialog, setOpenEditDialog] = useState(false);
   const [formData, setFormData] = useState<any>({});
   const [editingItem, setEditingItem] = useState<any>(null);
+  const [formError, setFormError] = useState<string | null>(null);
 
   const tableData = Array.isArray(data) ? data : [];
 
@@ -83,18 +84,27 @@ export const DataTable: React.FC<DataTableProps> = ({
     setPage(0);
   };
 
-  const handleAdd = () => {
-    console.log('DataTable handleAdd called with formData:', formData);
-    onAdd(formData);
-    setFormData({});
-    setOpenAddDialog(false);
+  const handleAdd = async () => {
+    setFormError(null);
+    try {
+      await onAdd(formData);
+      setFormData({});
+      setOpenAddDialog(false);
+    } catch (err: any) {
+      setFormError(err?.message || 'Failed to add item.');
+    }
   };
 
-  const handleEdit = () => {
-    onEdit({ ...editingItem, ...formData });
-    setFormData({});
-    setEditingItem(null);
-    setOpenEditDialog(false);
+  const handleEdit = async () => {
+    setFormError(null);
+    try {
+      await onEdit({ ...editingItem, ...formData });
+      setFormData({});
+      setEditingItem(null);
+      setOpenEditDialog(false);
+    } catch (err: any) {
+      setFormError(err?.message || 'Failed to edit item.');
+    }
   };
 
   const handleOpenEdit = (item: any) => {
@@ -233,6 +243,7 @@ export const DataTable: React.FC<DataTableProps> = ({
         <DialogTitle>Add New Item</DialogTitle>
         <DialogContent>
           <Stack spacing={2} sx={{ mt: 2 }}>
+            {formError && <Typography color="error">{formError}</Typography>}
             {addFormFields.map((field) => (
               field.type === 'select' ? (
                 <TextField
@@ -294,6 +305,7 @@ export const DataTable: React.FC<DataTableProps> = ({
         <DialogTitle>Edit Item</DialogTitle>
         <DialogContent>
           <Stack spacing={2} sx={{ mt: 2 }}>
+            {formError && <Typography color="error">{formError}</Typography>}
             {addFormFields.map((field) => (
               field.type === 'select' ? (
                 <TextField

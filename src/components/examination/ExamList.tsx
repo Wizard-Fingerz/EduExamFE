@@ -18,8 +18,8 @@ import {
   Zoom,
   IconButton,
   Tooltip,
-  // Skeleton,
-  useTheme,
+  Container,
+  Divider,
   CircularProgress,
 } from '@mui/material';
 import {
@@ -35,7 +35,6 @@ import {
 import examService, { Exam } from '../../services/examService';
 
 export const ExamList: React.FC = () => {
-  const theme = useTheme();
   const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState('');
   const [subjectFilter, setSubjectFilter] = useState('');
@@ -62,17 +61,21 @@ export const ExamList: React.FC = () => {
     }
   };
 
-  console.log(exams);
+  // Get unique courses with titles for filter
+  const uniqueCourses = Array.from(
+    exams.reduce((acc, exam) => acc.set(exam.subject.id, exam.subject.name), new Map()),
+    ([id, title]) => ({ id, title })
+  );
+
   const filteredExams = (exams || [])?.filter(exam => {
     const matchesSearch = exam.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
       exam.description.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesSubject = !subjectFilter || exam.course.toString() === subjectFilter;
+    const matchesSubject = !subjectFilter || exam.course.id.toString() === subjectFilter;
     return matchesSearch && matchesSubject;
   });
-  
 
   const toggleBookmark = (examId: number) => {
-    setBookmarkedExams(prev => 
+    setBookmarkedExams(prev =>
       prev.includes(examId) ? prev.filter(id => id !== examId) : [...prev, examId]
     );
   };
@@ -80,7 +83,6 @@ export const ExamList: React.FC = () => {
   const handleStartExam = async (examId: number) => {
     try {
       const attempt = await examService.startExam(examId);
-      console.log('Exam attempt started:', attempt);
       navigate(`/exam/${examId}`);
     } catch (err) {
       setError('Failed to start exam. Please try again.');
@@ -88,44 +90,39 @@ export const ExamList: React.FC = () => {
   };
 
   return (
-    <Box>
-      <Fade in={!loading} timeout={1000}>
-        <Stack spacing={4}>
-          <Stack direction="row" alignItems="center" justifyContent="space-between">
-            <Typography 
-              variant="h4" 
-              sx={{
-                background: `linear-gradient(45deg, ${theme.palette.primary.main}, ${theme.palette.secondary.main})`,
-                WebkitBackgroundClip: 'text',
-                WebkitTextFillColor: 'transparent',
-                fontWeight: 'bold'
-              }}
-            >
+    <Container maxWidth="xl">
+      <Fade in timeout={800}>
+        <Box sx={{ py: 4 }}>
+          <Stack direction="row" alignItems="center" spacing={2} sx={{ mb: 6 }}>
+            <SchoolIcon sx={{ fontSize: 40 }} color="primary" />
+            <Typography variant="h4" fontWeight="bold">
               Available Exams
             </Typography>
-            <Tooltip title="Filter Options">
-              <IconButton>
-                <FilterIcon />
-              </IconButton>
-            </Tooltip>
           </Stack>
 
-          <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
+          <Stack
+            direction={{ xs: 'column', sm: 'row' }}
+            spacing={2}
+            sx={{ mb: 4 }}
+            alignItems="center"
+            justifyContent="space-between"
+          >
             <TextField
-              fullWidth
               placeholder="Search exams..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
+              variant="outlined"
+              size="small"
+              fullWidth
+              sx={{ maxWidth: 500 }}
               InputProps={{
                 startAdornment: (
                   <InputAdornment position="start">
-                    <SearchIcon />
+                    <SearchIcon color="action" />
                   </InputAdornment>
                 ),
               }}
-              sx={{ flex: 2 }}
+              onChange={(e) => setSearchTerm(e.target.value)}
             />
-            <FormControl sx={{ flex: 1 }}>
+            <FormControl sx={{ minWidth: 180 }}>
               <InputLabel>Subject</InputLabel>
               <Select
                 value={subjectFilter}
@@ -133,8 +130,8 @@ export const ExamList: React.FC = () => {
                 onChange={(e) => setSubjectFilter(e.target.value)}
               >
                 <MenuItem value="">All Subjects</MenuItem>
-                {Array.from(new Set(exams.map(exam => exam.course))).map((courseId) => (
-                  <MenuItem key={courseId} value={courseId}>Course {courseId}</MenuItem>
+                {uniqueCourses.map((course) => (
+                  <MenuItem key={course.id} value={course.id}>{course.title}</MenuItem>
                 ))}
               </Select>
             </FormControl>
@@ -151,77 +148,96 @@ export const ExamList: React.FC = () => {
               <CircularProgress />
             </Box>
           ) : (
-            <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' }, gap: 3 }}>
+            <Box sx={{
+              display: 'grid',
+              gridTemplateColumns: {
+                xs: '1fr',
+                md: 'repeat(2, 1fr)',
+                lg: 'repeat(3, 1fr)'
+              },
+              gap: 3
+            }}>
               {filteredExams.map((exam) => (
-                <Zoom in key={exam.id} style={{ transitionDelay: '150ms' }}>
+                <Zoom in timeout={500} key={exam.id}>
                   <Card
                     onMouseEnter={() => setHoveredExam(exam.id)}
                     onMouseLeave={() => setHoveredExam(null)}
                     sx={{
                       height: '100%',
-                      transition: 'all 0.3s ease',
-                      transform: hoveredExam === exam.id ? 'scale(1.02)' : 'scale(1)',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      transition: 'transform 0.2s',
                       '&:hover': {
-                        boxShadow: theme.shadows[10],
+                        transform: 'translateY(-4px)',
+                        boxShadow: 3,
                       },
                     }}
-                  >
-                    <CardContent>
-                      <Stack spacing={2}>
-                        <Stack direction="row" justifyContent="space-between" alignItems="center">
-                          <Stack direction="row" spacing={1}>
-                            <Chip
-                              size="small"
-                              label={`Course ${exam.course.title}`}
-                              icon={<SchoolIcon />}
-                              color="primary"
-                            />
-                            <Chip
-                              size="small"
-                              label={`${exam.course.passing_score}% to pass`}
-                              icon={<DifficultyIcon />}
-                              color="primary"
-                            />
-                          </Stack>
-                          <IconButton 
-                            onClick={() => toggleBookmark(exam.id)}
-                            color="primary"
-                          >
-                            {bookmarkedExams.includes(exam.id) ? <BookmarkIcon /> : <BookmarkBorderIcon />}
-                          </IconButton>
-                        </Stack>
-
-                        <Typography variant="h6" gutterBottom>{exam.title}</Typography>
-                        <Typography variant="body2" color="text.secondary" sx={{ minHeight: 60 }}>
-                          {exam.description}
-                        </Typography>
-
-                        <Stack direction="row" spacing={2} alignItems="center">
-                          <Chip
-                            icon={<TimerIcon />}
-                            label={`${exam.duration} min`}
-                            size="small"
-                            variant="outlined"
-                          />
-                        </Stack>
-
-                        <Button
-                          variant="contained"
-                          startIcon={<StartIcon />}
-                          onClick={() => handleStartExam(exam.id)}
-                          fullWidth
-                        >
-                          Start Exam
-                        </Button>
-                      </Stack>
-                    </CardContent>
+                  > 
+                  <CardContent>
+                  <Stack spacing={2}>
+                    
+                    {/* Header with title and bookmark */}
+                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <Typography variant="h6" fontWeight={600}>
+                        {exam.title}
+                      </Typography>
+                      <IconButton size="small" onClick={() => toggleBookmark(exam.id)}>
+                        {bookmarkedExams.includes(exam.id) ? (
+                          <BookmarkIcon color="primary" />
+                        ) : (
+                          <BookmarkBorderIcon />
+                        )}
+                      </IconButton>
+                    </Box>
+              
+                    {/* Subject Tag */}
+                    <Chip
+                      label={exam.subject.name}
+                      size="small"
+                      color="primary"
+                      variant="filled"
+                      sx={{ width: 'fit-content' }}
+                    />
+              
+                    {/* Description */}
+                    <Typography variant="body2" color="text.secondary">
+                      {exam.description}
+                    </Typography>
+              
+                    <Divider />
+              
+                    {/* Meta Information */}
+                    <Stack direction="row" spacing={3} alignItems="center">
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                        <TimerIcon fontSize="small" color="action" />
+                        <Typography variant="caption">{exam.duration} min</Typography>
+                      </Box>
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                        <DifficultyIcon fontSize="small" color="action" />
+                        <Typography variant="caption">{exam.passing_marks}% to pass</Typography>
+                      </Box>
+                    </Stack>
+              
+                    {/* Call to Action */}
+                    <Button
+                      variant="contained"
+                      startIcon={<StartIcon />}
+                      onClick={() => handleStartExam(exam.id)}
+                      fullWidth
+                      sx={{ mt: 2, borderRadius: 2 }}
+                    >
+                      Start Exam
+                    </Button>
+              
+                  </Stack>
+                </CardContent>
                   </Card>
                 </Zoom>
               ))}
             </Box>
           )}
-        </Stack>
+        </Box>
       </Fade>
-    </Box>
+    </Container>
   );
 };
