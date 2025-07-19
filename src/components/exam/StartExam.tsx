@@ -15,7 +15,7 @@ import {
 } from '@mui/material';
 import {
   Timer as TimerIcon,
-  Assignment as AssignmentIcon,
+  Quiz as QuizIcon,
   School as SchoolIcon,
 } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
@@ -96,7 +96,7 @@ export const StartExam: React.FC = () => {
                         </Typography>
                       </Box>
                       <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                        <AssignmentIcon sx={{ mr: 1 }} color="primary" />
+                        <QuizIcon sx={{ mr: 1 }} color="primary" />
                         <Typography>
                           Questions: {examInfo.totalQuestions}
                         </Typography>

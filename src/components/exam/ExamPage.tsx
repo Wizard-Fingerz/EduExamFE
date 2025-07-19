@@ -22,7 +22,7 @@ import {
 } from '@mui/material';
 import {
   Timer as TimerIcon,
-  Assignment as AssignmentIcon,
+  Quiz as QuizIcon,
   School as SchoolIcon,
   NavigateNext as NextIcon,
   NavigateBefore as PrevIcon,
@@ -264,7 +264,7 @@ export const ExamPage: React.FC = () => {
                         </Typography>
                       </Box>
                       <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                        <AssignmentIcon sx={{ mr: 1 }} color="primary" />
+                        <QuizIcon sx={{ mr: 1 }} color="primary" />
                         <Typography>
                           Questions: {examData?.totalQuestions}
                         </Typography>

@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import examService, { Exam } from '../../services/examService';
-import progressService, { CourseProgress } from '../../services/progressService';
+import progressService, { SyllabusProgress } from '../../services/progressService';
 import {
   Box,
   Paper,
@@ -52,7 +52,7 @@ export const Dashboard: React.FC = () => {
   const [selectedFilter, setSelectedFilter] = useState('all');
   console.log(selectedFilter);
   const [upcomingExams, setUpcomingExams] = useState<Exam[]>([]);
-  const [learningProgress, setLearningProgress] = useState<CourseProgress[]>([]);
+  const [learningProgress, setLearningProgress] = useState<SyllabusProgress[]>([]);
   const [stats, setStats] = useState({
     upcomingExams: 0,
     completedExams: 0,
@@ -74,15 +74,15 @@ export const Dashboard: React.FC = () => {
       const upcoming = exams.results.filter((exam: Exam) => new Date(exam.start_time) > new Date());
       setUpcomingExams(upcoming);
 
-      // Fetch course progress
+      // Fetch syllabus progress
       const progress = await Promise.all(
-        exams.results.map((exam: Exam) => progressService.getCourseProgress(exam.subject.id))
+        exams.results.map((exam: Exam) => progressService.getSyllabusProgress(exam.subject.id))
       );
       setLearningProgress(progress);
 
       // Calculate stats
       const completedExams = exams.results.filter((exam: Exam) => 
-        progress.some(p => p.course === exam.course && p.progress_percentage === 100)
+        progress.some(p => p.syllabus === exam.syllabus && p.progress_percentage === 100)
       ).length;
 
       const averageScore = progress.reduce((acc, curr) => acc + curr.progress_percentage, 0) / progress.length;
@@ -125,8 +125,8 @@ export const Dashboard: React.FC = () => {
   };
 
   // Prepare data for charts
-  const progressByCourse = learningProgress.map((progress) => ({
-    name: progress.course.title,
+  const progressBySyllabus = learningProgress.map((progress) => ({
+    name: progress.syllabus.title,
     Progress: progress.progress_percentage,
   }));
 
@@ -137,7 +137,7 @@ export const Dashboard: React.FC = () => {
 
   // Simulate exam performance over time (replace with real data if available)
   const examPerformance = learningProgress.map((progress, idx) => ({
-    name: progress.course.title,
+    name: progress.syllabus.title,
     Score: progress.progress_percentage,
     idx,
   }));
@@ -230,11 +230,11 @@ export const Dashboard: React.FC = () => {
 
         {/* Analytics Section */}
         <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '2fr 1fr' }, gap: 4, mb: 4 }}>
-          {/* Progress by Course Bar Chart */}
+          {/* Progress by Syllabus Bar Chart */}
           <Paper sx={{ p: 3, borderRadius: 2, minHeight: 320 }}>
-            <Typography variant="h6" gutterBottom>Progress by Course</Typography>
+            <Typography variant="h6" gutterBottom>Progress by Syllabus</Typography>
             <ResponsiveContainer width="100%" height={250}>
-              <BarChart data={progressByCourse} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
+              <BarChart data={progressBySyllabus} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
                 <CartesianGrid strokeDasharray="3 3" />
                 <XAxis dataKey="name" />
                 <YAxis domain={[0, 100]} />
@@ -343,7 +343,7 @@ export const Dashboard: React.FC = () => {
                 {learningProgress.map((progress) => (
                   <Box key={`progress-${progress.id}`}>
                     <Stack direction={{ xs: 'column', sm: 'row' }} justifyContent="space-between" alignItems={{ xs: 'flex-start', sm: 'center' }} sx={{ mb: 1 }} spacing={1}>
-                      <Typography variant="body2">{progress.course.title}</Typography>
+                      <Typography variant="body2">{progress.syllabus.title}</Typography>
                       <Stack direction="row" spacing={1} alignItems="center">
                         <Chip label={`${progress.progress_percentage}%`} size="small" color={progress.progress_percentage >= 80 ? 'success' : 'primary'} />
                       </Stack>

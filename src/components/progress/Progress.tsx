@@ -40,7 +40,7 @@ interface SubjectProgress {
   timeSpent: string;
   strengths: string[];
   areasToImprove: string[];
-  courseId: number;
+  syllabusId: number;
 }
 
 type SortOption = 'progress' | 'score' | 'exams' | 'time';
@@ -66,26 +66,26 @@ export const Progress: React.FC = () => {
       const stats = await progressService.getLearningJourneyStats();
       setOverallStats(stats);
 
-      // Fetch course progress
-      const coursesProgress = await progressService.getAllCourseProgress();
+      // Fetch syllabus progress
+      const syllabusProgress = await progressService.getAllSyllabusProgress();
       
-      if (!Array.isArray(coursesProgress)) {
-        console.error('Invalid course progress data format:', coursesProgress);
+      if (!Array.isArray(syllabusProgress)) {
+        console.error('Invalid syllabus progress data format:', syllabusProgress);
         setError('Invalid data format received from server');
         return;
       }
 
       const subjectProgressData: SubjectProgress[] = [];
 
-      for (const course of coursesProgress) {
+      for (const syllabus of syllabusProgress) {
         try {
-          if (!course || !course.course) {
-            console.warn('Skipping invalid course data:', course);
+          if (!syllabus || !syllabus.syllabus) {
+            console.warn('Skipping invalid syllabus data:', syllabus);
             continue;
           }
 
-          // Fetch exam progress for this course
-          const examProgress = await progressService.getExamProgress(course.course.id);
+          // Fetch exam progress for this syllabus
+          const examProgress = await progressService.getExamProgress(syllabus.syllabus.id);
           const examScores = Array.isArray(examProgress) 
             ? examProgress.map(exam => exam.best_score || 0)
             : [];
@@ -100,8 +100,8 @@ export const Progress: React.FC = () => {
             .map((_, index) => `Topic ${index + 1}`);
 
           subjectProgressData.push({
-            subject: course.course.title,
-            progress: course.progress_percentage || 0,
+            subject: syllabus.syllabus.title,
+            progress: syllabus.progress_percentage || 0,
             score: examScores.length > 0 
               ? Math.round(examScores.reduce((a, b) => a + b, 0) / examScores.length) 
               : 0,
@@ -109,11 +109,11 @@ export const Progress: React.FC = () => {
             timeSpent: '0h 0m', // This will be updated when we have time tracking
             strengths,
             areasToImprove,
-            courseId: course.course.id
+            syllabusId: syllabus.syllabus.id
           });
-        } catch (courseError) {
-          console.error(`Error processing course ${course.course?.id}:`, courseError);
-          // Continue with other courses even if one fails
+        } catch (syllabusError) {
+          console.error(`Error processing syllabus ${syllabus.syllabus?.id}:`, syllabusError);
+          // Continue with other syllabus even if one fails
         }
       }
 

@@ -5,7 +5,7 @@ import { ForgotPassword } from '../components/auth/ForgotPassword';
 import { Dashboard } from '../components/dashboard/Dashboard';
 import { ExamList } from '../components/examination/ExamList';
 import { ExamPage } from '../components/exam/ExamPage';
-import { Courses } from '../components/courses/Courses';
+// import { Syllabus } from '../components/syllabus/Syllabus';
 import { Learning } from '../components/learning/Learning';
 import { Progress } from '../components/progress/Progress';
 import { Settings } from '../components/settings/Settings';
@@ -15,9 +15,9 @@ import { StaffLayout } from '../components/layout/StaffLayout';
 import { StaffDashboard } from '../components/staff/StaffDashboard';
 import { ExamManagement } from '../components/staff/ExamManagement';
 import { ExamQuestionsManagement } from '../components/staff/ExamQuestionsManagement';
-import { AssignmentManagement } from '../components/staff/AssignmentManagement';
-import { AssignmentQuestionsManagement } from '../components/staff/AssignmentQuestionsManagement';
-import { CourseManagement } from '../components/staff/CourseManagement';
+// import { QuizManagement } from '../components/staff/QuizManagement';
+// import { QuizQuestionsManagement } from '../components/staff/QuizQuestionsManagement';
+// import { SyllabusManagement } from '../components/staff/SyllabusManagement';
 import { StudentManagement } from '../components/staff/StudentManagement';
 import { AnalyticsDashboard } from '../components/staff/AnalyticsDashboard';
 import { AuthLayout } from '../components/auth/AuthLayout';
@@ -26,6 +26,10 @@ import { Navigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { ProfileSetup } from '../components/auth/ProfileSetup';
 import { LandingPage } from '../components/LandingPage';
+import { QuizManagement } from '../components/staff/QuizManagement';
+import { QuizQuestionsManagement } from '../components/staff/QuizQuestionsManagement';
+import { Syllabus } from '../components/syllabus/Syllabus';
+import { SyllabusManagement } from '../components/staff/SyllabusManagement';
 
 // Helper component for role-based redirect
 const RoleBasedRedirect: React.FC = () => {
@@ -90,7 +94,7 @@ const studentRoutes: RouteObject[] = [
       { path: 'dashboard', element: <Dashboard /> },
       { path: 'exams', element: <ExamList /> },
       { path: 'exam/:examId', element: <ExamPage /> },
-      { path: 'courses', element: <Courses /> },
+      { path: 'syllabus', element: <Syllabus /> },
       { path: 'learning', element: <Learning /> },
       { path: 'progress', element: <Progress /> },
       { path: 'settings', element: <Settings /> },
@@ -112,9 +116,9 @@ const staffRoutes: RouteObject[] = [
       { path: 'dashboard', element: <StaffDashboard /> },
       { path: 'exams', element: <ExamManagement /> },
       { path: 'exams/:examId/questions', element: <ExamQuestionsManagement /> },
-      { path: 'assignments', element: <AssignmentManagement /> },
-      { path: 'assignments/:assignmentId/questions', element: <AssignmentQuestionsManagement /> },
-      { path: 'courses', element: <CourseManagement /> },
+      { path: 'quiz', element: <QuizManagement /> },
+      { path: 'quiz/:quizId/questions', element: <QuizQuestionsManagement /> },
+      { path: 'syllabus', element: <SyllabusManagement /> },
       { path: 'students', element: <StudentManagement /> },
       { path: 'analytics', element: <AnalyticsDashboard /> },
       { path: 'settings', element: <Settings /> },

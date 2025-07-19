@@ -1,9 +1,9 @@
 import api from './api';
 
-export interface CourseProgress {
+export interface SyllabusProgress {
   id: number;
   student: number;
-  course: any;
+  syllabus: any;
   completed_lessons: number[];
   total_lessons: number;
   progress_percentage: number;
@@ -31,8 +31,8 @@ export interface ExamProgress {
   last_attempt: string | null;
 }
 
-export interface CourseProgressOverview {
-  course: any;
+export interface SyllabusProgressOverview {
+  syllabus: any;
   progress_percentage: number;
   completed_lessons: number;
   total_lessons: number;
@@ -42,27 +42,27 @@ export interface CourseProgressOverview {
 }
 
 const progressService = {
-  // Course Progress
-  async getCourseProgress(courseId: number) {
-    const response = await api.get(`/progress/course/${courseId}/`);
+  // Syllabus Progress
+  async getSyllabusProgress(syllabusId: number) {
+    const response = await api.get(`/progress/syllabus/${syllabusId}/`);
     return response.data;
   },
 
-  async updateCourseProgress(courseId: number, data: Partial<CourseProgress>) {
-    const response = await api.put(`/progress/course/${courseId}/`, data);
+  async updateSyllabusProgress(syllabusId: number, data: Partial<SyllabusProgress>) {
+    const response = await api.put(`/progress/syllabus/${syllabusId}/`, data);
     return response.data;
   },
 
-  async getCourseProgressOverview(courseId: number) {
-    const response = await api.get(`/progress/course/${courseId}/overview/`);
+  async getSyllabusProgressOverview(syllabusId: number) {
+    const response = await api.get(`/progress/syllabus/${syllabusId}/overview/`);
     return response.data;
   },
 
-  async getAllCourseProgress(): Promise<CourseProgress[]> {
+  async getAllSyllabusProgress(): Promise<SyllabusProgress[]> {
     try {
-      console.log('Fetching all course progress...');
-      const response = await api.get('/progress/courses/');
-      console.log('Course progress response:', response);
+      console.log('Fetching all syllabus progress...');
+      const response = await api.get('/progress/syllabus/');
+      console.log('Syllabus progress response:', response);
       
       if (!response.data) {
         console.error('No data received from server');
@@ -77,7 +77,7 @@ const progressService = {
         return [];
       }
       
-      // Ensure each course progress has the required fields
+      // Ensure each syllabus progress has the required fields
       return data.map(progress => ({
         ...progress,
         progress_percentage: progress.progress_percentage || 0,
@@ -88,7 +88,7 @@ const progressService = {
         completed_at: progress.completed_at || null
       }));
     } catch (error: any) {
-      console.error('Error fetching all course progress:', error);
+      console.error('Error fetching all syllabus progress:', error);
       if (error.response) {
         console.error('Error response:', error.response.data);
       }
@@ -144,8 +144,8 @@ const progressService = {
     return response.data;
   },
 
-  async getLearningPath(courseId: number) {
-    const response = await api.get(`/progress/learning-journey/path/${courseId}/`);
+  async getLearningPath(syllabusId: number) {
+    const response = await api.get(`/progress/learning-journey/path/${syllabusId}/`);
     return response.data;
   }
 };

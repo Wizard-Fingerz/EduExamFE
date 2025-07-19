@@ -61,8 +61,8 @@ export const ExamList: React.FC = () => {
     }
   };
 
-  // Get unique courses with titles for filter
-  const uniqueCourses = Array.from(
+  // Get unique syllabus with titles for filter
+  const uniqueSyllabus = Array.from(
     exams.reduce((acc, exam) => acc.set(exam.subject.id, exam.subject.name), new Map()),
     ([id, title]) => ({ id, title })
   );
@@ -70,7 +70,7 @@ export const ExamList: React.FC = () => {
   const filteredExams = (exams || [])?.filter(exam => {
     const matchesSearch = exam.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
       exam.description.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesSubject = !subjectFilter || exam.course.id.toString() === subjectFilter;
+    const matchesSubject = !subjectFilter || exam.syllabus.id.toString() === subjectFilter;
     return matchesSearch && matchesSubject;
   });
 
@@ -131,8 +131,8 @@ export const ExamList: React.FC = () => {
                 onChange={(e) => setSubjectFilter(e.target.value)}
               >
                 <MenuItem value="">All Subjects</MenuItem>
-                {uniqueCourses.map((course) => (
-                  <MenuItem key={course.id} value={course.id}>{course.title}</MenuItem>
+                {uniqueSyllabus.map((syllabus) => (
+                  <MenuItem key={syllabus.id} value={syllabus.id}>{syllabus.title}</MenuItem>
                 ))}
               </Select>
             </FormControl>

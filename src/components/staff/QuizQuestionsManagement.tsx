@@ -44,17 +44,17 @@ interface Choice {
   is_correct: boolean;
 }
 
-interface Assignment {
+interface Quiz {
   id: number;
   title: string;
   description: string;
-  course: any;
+  syllabus: any;
 }
 
-export const AssignmentQuestionsManagement: React.FC = () => {
-  const { assignmentId } = useParams<{ assignmentId: string }>();
+export const QuizQuestionsManagement: React.FC = () => {
+  const { quizId } = useParams<{ quizId: string }>();
   const navigate = useNavigate();
-  const [assignment, setAssignment] = useState<Assignment | null>(null);
+  const [quiz, setQuiz] = useState<Quiz | null>(null);
   const [questions, setQuestions] = useState<Question[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -80,22 +80,22 @@ export const AssignmentQuestionsManagement: React.FC = () => {
   });
 
   useEffect(() => {
-    if (assignmentId) {
-      fetchAssignmentAndQuestions();
+    if (quizId) {
+      fetchQuizAndQuestions();
     }
-  }, [assignmentId]);
+  }, [quizId]);
 
-  const fetchAssignmentAndQuestions = async () => {
+  const fetchQuizAndQuestions = async () => {
     try {
       setLoading(true);
       setError(null);
 
-      const [assignmentData, questionsData] = await Promise.all([
-        staffService.getStaffAssignment(parseInt(assignmentId!)),
-        staffService.getAssignmentQuestions(parseInt(assignmentId!))
+      const [quizData, questionsData] = await Promise.all([
+        staffService.getStaffQuiz(parseInt(quizId!)),
+        staffService.getQuizQuestions(parseInt(quizId!))
       ]);
 
-      setAssignment(assignmentData);
+      setQuiz(quizData);
       
       // Ensure questions is always an array
       if (Array.isArray(questionsData)) {
@@ -107,8 +107,8 @@ export const AssignmentQuestionsManagement: React.FC = () => {
         setQuestions([]);
       }
     } catch (err) {
-      console.error('Error fetching assignment and questions:', err);
-      setError('Failed to load assignment and questions. Please try again later.');
+      console.error('Error fetching quiz and questions:', err);
+      setError('Failed to load quiz and questions. Please try again later.');
       setQuestions([]);
     } finally {
       setLoading(false);
@@ -177,15 +177,15 @@ export const AssignmentQuestionsManagement: React.FC = () => {
       }
       
       if (editingQuestion) {
-        const updatedQuestion = await staffService.updateAssignmentQuestion(
-          parseInt(assignmentId!),
+        const updatedQuestion = await staffService.updateQuizQuestion(
+          parseInt(quizId!),
           editingQuestion.id,
           processedForm
         );
         setQuestions(questions.map(q => q.id === editingQuestion.id ? updatedQuestion : q));
       } else {
-        const newQuestion = await staffService.createAssignmentQuestion(
-          parseInt(assignmentId!),
+        const newQuestion = await staffService.createQuizQuestion(
+          parseInt(quizId!),
           processedForm
         );
         setQuestions([...questions, newQuestion]);
@@ -211,7 +211,7 @@ export const AssignmentQuestionsManagement: React.FC = () => {
   const handleDeleteQuestion = async (questionId: number) => {
     if (window.confirm('Are you sure you want to delete this question?')) {
       try {
-        await staffService.deleteAssignmentQuestion(parseInt(assignmentId!), questionId);
+        await staffService.deleteQuizQuestion(parseInt(quizId!), questionId);
         setQuestions(questions.filter(q => q.id !== questionId));
       } catch (err) {
         console.error('Error deleting question:', err);
@@ -242,7 +242,7 @@ export const AssignmentQuestionsManagement: React.FC = () => {
           <ArrowBackIcon />
         </IconButton>
         <Typography variant="h4">
-          {assignment?.title} - Questions Management
+          {quiz?.title} - Questions Management
         </Typography>
       </Stack>
 

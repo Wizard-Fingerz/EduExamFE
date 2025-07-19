@@ -17,15 +17,15 @@ export interface UserPreferences {
   pushNotifications: boolean;
 }
 
-// Course related types
-export interface Course {
+// Syllabus related types
+export interface Syllabus {
   id: string;
   title: string;
   slug: string;
   description: string;
   shortDescription: string;
-  level: CourseLevel;
-  category: CourseCategory;
+  level: SyllabusLevel;
+  category: SyllabusCategory;
   duration: {
     weeks: number;
     hoursPerWeek: number;
@@ -35,19 +35,19 @@ export interface Course {
   price: number;
   rating: number;
   enrolledStudents: number;
-  syllabus: CourseSyllabus[];
+  syllabus: Syllabusyllabus[];
   prerequisites: string[];
   objectives: string[];
-  status: CourseStatus;
+  status: Syllabustatus;
   createdAt: string;
   updatedAt: string;
 }
 
-export type CourseLevel = 'beginner' | 'intermediate' | 'advanced';
+export type SyllabusLevel = 'beginner' | 'intermediate' | 'advanced';
 
-export type CourseStatus = 'draft' | 'published' | 'archived';
+export type Syllabustatus = 'draft' | 'published' | 'archived';
 
-export interface CourseCategory {
+export interface SyllabusCategory {
   id: string;
   name: string;
   slug: string;
@@ -55,7 +55,7 @@ export interface CourseCategory {
   parentCategory?: string;
 }
 
-export interface CourseSyllabus {
+export interface Syllabusyllabus {
   id: string;
   title: string;
   description: string;
@@ -63,10 +63,10 @@ export interface CourseSyllabus {
   type: ContentType;
   order: number;
   isRequired: boolean;
-  children?: CourseSyllabus[];
+  children?: Syllabusyllabus[];
 }
 
-export type ContentType = 'video' | 'article' | 'quiz' | 'assignment' | 'live-session';
+export type ContentType = 'video' | 'article' | 'quiz' | 'quiz' | 'live-session';
 
 export interface Instructor {
   id: string;
@@ -77,13 +77,13 @@ export interface Instructor {
   expertise: string[];
   rating: number;
   totalStudents: number;
-  totalCourses: number;
+  totalSyllabus: number;
 }
 
 // Learning Progress types
 export interface LearningProgress {
   userId: string;
-  courseId: string;
+  syllabusId: string;
   progress: number;
   status: LearningStatus;
   startedAt: string;
@@ -127,8 +127,8 @@ export interface AchievementCriteria {
 // Analytics types
 export interface LearningAnalytics {
   userId: string;
-  totalCourses: number;
-  completedCourses: number;
+  totalSyllabus: number;
+  completedSyllabus: number;
   totalHours: number;
   averageScore: number;
   streakDays: number;
@@ -148,6 +148,6 @@ export interface LearningGoal {
 export interface WeeklyProgress {
   week: string;
   hoursSpent: number;
-  coursesProgressed: number;
+  syllabusProgressed: number;
   achievementsEarned: number;
 } 

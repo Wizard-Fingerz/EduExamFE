@@ -1,6 +1,6 @@
 import api from './api';
 
-export interface Course {
+export interface Syllabus {
   id: number;
   title: string;
   description: string;
@@ -23,7 +23,7 @@ export interface Exam {
   id: number;
   title: string;
   description: string;
-  course: any;
+  syllabus: any;
   duration: number;
   total_marks: number;
   passing_marks: number;

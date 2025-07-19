@@ -1,27 +1,27 @@
 import React, { useState, useEffect } from 'react';
 import { Box, Typography, Alert, CircularProgress } from '@mui/material';
 import { DataTable } from './common/DataTable';
-import staffService, { StaffCourse, StaffSubject } from '../../services/staffService';
+import staffService, { StaffSyllabus, StaffSubject } from '../../services/staffService';
 
-export const CourseManagement: React.FC = () => {
-  const [courses, setCourses] = useState<StaffCourse[]>([]);
+export const SyllabusManagement: React.FC = () => {
+  const [syllabus, setSyllabus] = useState<StaffSyllabus[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [subjects, setSubjects] = useState<StaffSubject[]>([]);
 
   useEffect(() => {
-    fetchCourses();
+    fetchSyllabus();
   }, []);
 
-  const fetchCourses = async () => {
+  const fetchSyllabus = async () => {
     try {
       setLoading(true);
       setError(null);
-      console.log('Fetching courses...');
+      console.log('Fetching syllabus...');
 
-      const [subjectResponse, coursesResponse] = await Promise.all([
+      const [subjectResponse, syllabusResponse] = await Promise.all([
         staffService.getStaffSubjects(),
-        staffService.getStaffCourses()
+        staffService.getStaffSyllabus()
       ]);
 
       // Handle exams data
@@ -38,19 +38,19 @@ export const CourseManagement: React.FC = () => {
         setSubjects([]);
       }
       
-      // Handle courses data
-      const coursesData = Array.isArray(coursesResponse) ? coursesResponse : (coursesResponse as any)?.results;
-      if (Array.isArray(coursesData)) {
-        console.log('Setting courses:', coursesData);
-        setCourses(coursesData);
+      // Handle syllabus data
+      const syllabusData = Array.isArray(syllabusResponse) ? syllabusResponse : (syllabusResponse as any)?.results;
+      if (Array.isArray(syllabusData)) {
+        console.log('Setting syllabus:', syllabusData);
+        setSyllabus(syllabusData);
       } else {
-        console.error('Invalid courses data format:', coursesData);
-        setCourses([]);
+        console.error('Invalid syllabus data format:', syllabusData);
+        setSyllabus([]);
       }
 
     } catch (err) {
-      console.error('Error fetching courses:', err);
-      setError('Failed to load courses. Please try again later.');
+      console.error('Error fetching syllabus:', err);
+      setError('Failed to load syllabus. Please try again later.');
     } finally {
       setLoading(false);
     }
@@ -69,7 +69,7 @@ export const CourseManagement: React.FC = () => {
   ];
 
   const formFields = [
-    { id: 'title', label: 'Course Title' },
+    { id: 'title', label: 'Syllabus Title' },
     { id: 'description', label: 'Description', multiline: true },
     { 
       id: 'category', 
@@ -96,46 +96,46 @@ export const CourseManagement: React.FC = () => {
     { id: 'is_published', label: 'Published', type: 'checkbox' },
   ];
 
-  const handleAdd = async (newCourse: Partial<StaffCourse>) => {
+  const handleAdd = async (newSyllabus: Partial<StaffSyllabus>) => {
     try {
       setError(null);
-      const createdCourse = await staffService.createCourse(newCourse);
-      if (createdCourse) {
-        setCourses(prevCourses => [...prevCourses, createdCourse]);
+      const createdSyllabus = await staffService.createSyllabus(newSyllabus);
+      if (createdSyllabus) {
+        setSyllabus(prevSyllabus => [...prevSyllabus, createdSyllabus]);
       } else {
-        throw new Error('No course data received from server');
+        throw new Error('No syllabus data received from server');
       }
     } catch (err) {
-      console.error('Error creating course:', err);
-      setError('Failed to create course. Please try again.');
+      console.error('Error creating syllabus:', err);
+      setError('Failed to create syllabus. Please try again.');
     }
   };
 
-  const handleEdit = async (editedCourse: StaffCourse) => {
+  const handleEdit = async (editedSyllabus: StaffSyllabus) => {
     try {
       setError(null);
-      const updatedCourse = await staffService.updateCourse(editedCourse.id, editedCourse);
-      if (updatedCourse) {
-        setCourses(courses.map((course) => 
-          course.id === editedCourse.id ? updatedCourse : course
+      const updatedSyllabus = await staffService.updateSyllabus(editedSyllabus.id, editedSyllabus);
+      if (updatedSyllabus) {
+        setSyllabus(syllabus.map((syllabus) => 
+          syllabus.id === editedSyllabus.id ? updatedSyllabus : syllabus
         ));
       } else {
-        throw new Error('No course data received from server');
+        throw new Error('No syllabus data received from server');
       }
     } catch (err) {
-      console.error('Error updating course:', err);
-      setError('Failed to update course. Please try again.');
+      console.error('Error updating syllabus:', err);
+      setError('Failed to update syllabus. Please try again.');
     }
   };
 
-  const handleDelete = async (courseToDelete: StaffCourse) => {
+  const handleDelete = async (syllabusToDelete: StaffSyllabus) => {
     try {
       setError(null);
-      await staffService.deleteCourse(courseToDelete.id);
-      setCourses(courses.filter((course) => course.id !== courseToDelete.id));
+      await staffService.deleteSyllabus(syllabusToDelete.id);
+      setSyllabus(syllabus.filter((syllabus) => syllabus.id !== syllabusToDelete.id));
     } catch (err) {
-      console.error('Error deleting course:', err);
-      setError('Failed to delete course. Please try again.');
+      console.error('Error deleting syllabus:', err);
+      setError('Failed to delete syllabus. Please try again.');
     }
   };
 
@@ -151,7 +151,7 @@ export const CourseManagement: React.FC = () => {
     
     <Box sx={{ py: 4,  px: 2 }}>
       <Typography variant="h4" sx={{ mb: 4 }}>
-        Course Management
+        Syllabus Management
       </Typography>
 
       {error && (
@@ -162,7 +162,7 @@ export const CourseManagement: React.FC = () => {
 
       <DataTable
         columns={columns}
-        data={courses}
+        data={syllabus}
         onAdd={handleAdd}
         onEdit={handleEdit}
         onDelete={handleDelete}

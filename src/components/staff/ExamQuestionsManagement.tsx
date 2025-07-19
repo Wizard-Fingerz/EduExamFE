@@ -48,7 +48,7 @@ interface Exam {
   id: number;
   title: string;
   description: string;
-  course: any;
+  syllabus: any;
 }
 
 export const ExamQuestionsManagement: React.FC = () => {

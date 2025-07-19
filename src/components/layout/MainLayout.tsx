@@ -61,7 +61,7 @@ export const MainLayout: React.FC = () => {
   const mainMenuItems = [
     { text: 'Dashboard', icon: <DashboardIcon />, path: '/dashboard' },
     { text: 'Exams', icon: <AssessmentIcon />, path: '/exams', badge: 2 },
-    { text: 'Courses', icon: <SchoolIcon />, path: '/courses' },
+    { text: 'Syllabus', icon: <SchoolIcon />, path: '/syllabus' },
     { text: 'My Learning', icon: <BookIcon />, path: '/learning' },
     { text: 'Progress', icon: <TimelineIcon />, path: '/progress' },
   ];

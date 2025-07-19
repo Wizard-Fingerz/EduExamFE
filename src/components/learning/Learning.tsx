@@ -42,7 +42,7 @@ interface LearningMaterial {
   completed: boolean;
   lastAccessed: string;
   subject: string;
-  courseId: number;
+  syllabusId: number;
   lessonId: number;
 }
 
@@ -52,7 +52,7 @@ export const Learning: React.FC = () => {
   const [learningStats, setLearningStats] = useState<any>(null);
   const [recentActivity, setRecentActivity] = useState<any[]>([]);
   const [learningMaterials, setLearningMaterials] = useState<LearningMaterial[]>([]);
-  const [enrolledCourses, setEnrolledCourses] = useState<any[]>([]);
+  const [enrolledSyllabus, setEnrolledSyllabus] = useState<any[]>([]);
   const navigate = useNavigate();
   // const { user } = useAuth();
 
@@ -72,69 +72,69 @@ export const Learning: React.FC = () => {
         const activity = await progressService.getRecentActivity();
         setRecentActivity(activity);
 
-        // Fetch enrolled courses progress
-        const coursesProgress = await progressService.getAllCourseProgress();
-        setEnrolledCourses(coursesProgress);
+        // Fetch enrolled syllabus progress
+        const syllabusProgress = await progressService.getAllSyllabusProgress();
+        setEnrolledSyllabus(syllabusProgress);
         
-        if (!Array.isArray(coursesProgress) || coursesProgress.length === 0) {
+        if (!Array.isArray(syllabusProgress) || syllabusProgress.length === 0) {
           setLearningMaterials([]);
           return;
         }
 
-        // Transform enrolled courses into learning materials
+        // Transform enrolled syllabus into learning materials
         const materials: LearningMaterial[] = [];
         
-        for (const course of coursesProgress) {
+        for (const syllabus of syllabusProgress) {
           try {
-            if (!course?.course?.id) {
-              console.warn('Skipping invalid course data:', course);
+            if (!syllabus?.syllabus?.id) {
+              console.warn('Skipping invalid syllabus data:', syllabus);
               continue;
             }
 
-            const courseOverview = await progressService.getCourseProgressOverview(course.course.id);
+            const syllabusOverview = await progressService.getSyllabusProgressOverview(syllabus.syllabus.id);
             
             // Get the last accessed lesson
-            if (courseOverview.last_accessed_lesson) {
-              const lessonProgress = await progressService.getLessonProgress(courseOverview.last_accessed_lesson.id);
+            if (syllabusOverview.last_accessed_lesson) {
+              const lessonProgress = await progressService.getLessonProgress(syllabusOverview.last_accessed_lesson.id);
               
               materials.push({
-                id: courseOverview.last_accessed_lesson.id,
-                title: courseOverview.last_accessed_lesson.title,
-                type: courseOverview.last_accessed_lesson.type || 'video',
-                duration: courseOverview.last_accessed_lesson.duration || '30 mins',
+                id: syllabusOverview.last_accessed_lesson.id,
+                title: syllabusOverview.last_accessed_lesson.title,
+                type: syllabusOverview.last_accessed_lesson.type || 'video',
+                duration: syllabusOverview.last_accessed_lesson.duration || '30 mins',
                 progress: lessonProgress.time_spent ? 
                   Math.min(100, Math.round((lessonProgress.time_spent / (30 * 60)) * 100)) : 0,
                 completed: lessonProgress.is_completed,
                 lastAccessed: new Date(lessonProgress.updated_at).toLocaleDateString(),
-                subject: course.course.title,
-                courseId: course.course.id,
-                lessonId: courseOverview.last_accessed_lesson.id,
+                subject: syllabus.syllabus.title,
+                syllabusId: syllabus.syllabus.id,
+                lessonId: syllabusOverview.last_accessed_lesson.id,
               });
             } else {
-              // If no last accessed lesson, create a default entry for the course
+              // If no last accessed lesson, create a default entry for the syllabus
               materials.push({
-                id: course.course.id,
-                title: course.course.title,
+                id: syllabus.syllabus.id,
+                title: syllabus.syllabus.title,
                 type: 'video',
                 duration: '30 mins',
                 progress: 0,
                 completed: false,
-                lastAccessed: new Date(course.last_accessed).toLocaleDateString(),
-                subject: course.course.title,
-                courseId: course.course.id,
-                lessonId: 0, // This will be updated when the user starts the course
+                lastAccessed: new Date(syllabus.last_accessed).toLocaleDateString(),
+                subject: syllabus.syllabus.title,
+                syllabusId: syllabus.syllabus.id,
+                lessonId: 0, // This will be updated when the user starts the syllabus
               });
             }
-          } catch (courseError) {
-            console.error(`Error processing course ${course.course?.id}:`, courseError);
-            // Continue with other courses even if one fails
+          } catch (syllabusError) {
+            console.error(`Error processing syllabus ${syllabus.syllabus?.id}:`, syllabusError);
+            // Continue with other syllabus even if one fails
           }
         }
         
         setLearningMaterials(materials);
       } catch (error) {
         console.error('Error fetching learning data:', error);
-        setError('Failed to load your enrolled courses. Please try again later.');
+        setError('Failed to load your enrolled syllabus. Please try again later.');
       } finally {
         setLoading(false);
       }
@@ -143,8 +143,8 @@ export const Learning: React.FC = () => {
     fetchData();
   }, []);
 
-  const handleContinueLearning = (courseId: number, lessonId: number) => {
-    navigate(`/course/${courseId}/lesson/${lessonId}`);
+  const handleContinueLearning = (syllabusId: number, lessonId: number) => {
+    navigate(`/syllabus/${syllabusId}/lesson/${lessonId}`);
   };
 
   if (loading) {
@@ -174,9 +174,9 @@ export const Learning: React.FC = () => {
             </Alert>
           )}
 
-          {enrolledCourses.length === 0 && !error ? (
+          {enrolledSyllabus.length === 0 && !error ? (
             <Alert severity="info" sx={{ mb: 4 }}>
-              You haven't enrolled in any courses yet. Visit the Courses page to start learning!
+              You haven't enrolled in any syllabus yet. Visit the Syllabus page to start learning!
             </Alert>
           ) : (
             // Active Learning Section
@@ -291,7 +291,7 @@ export const Learning: React.FC = () => {
                                 size="small"
                                 startIcon={<PlayIcon />}
                                 disabled={material.completed}
-                                onClick={() => handleContinueLearning(material.courseId, material.lessonId)}
+                                onClick={() => handleContinueLearning(material.syllabusId, material.lessonId)}
                                 sx={{
                                   borderRadius: 2,
                                   textTransform: 'none',

@@ -24,7 +24,7 @@ import {
   School as SchoolIcon,
   // PlayCircleOutline as PlayIcon,
   Book as BookIcon,
-  // Assignment as AssignmentIcon,
+  // Quiz as QuizIcon,
   // Timer as TimerIcon,
   Search as SearchIcon,
   FilterList as FilterIcon,
@@ -33,39 +33,40 @@ import {
   // Share as ShareIcon,
   Sort as SortIcon,
 } from '@mui/icons-material';
-import courseService, { Course } from '../../services/courseService';
 // import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
+import syllabuservice from '../../services/syllabusService';
+import { Syllabus as SyllabusType } from '../../types';
 
-export const Courses: React.FC = () => {
+export const Syllabus: React.FC = () => {
   // const navigate = useNavigate();
   const { user: currentUser } = useAuth();
   const [searchTerm, setSearchTerm] = useState('');
   const [filterAnchorEl, setFilterAnchorEl] = useState<null | HTMLElement>(null);
   const [sortAnchorEl, setSortAnchorEl] = useState<null | HTMLElement>(null);
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
-  const [bookmarkedCourses, setBookmarkedCourses] = useState<number[]>([]);
+  const [bookmarkedSyllabus, setBookmarkedSyllabus] = useState<string[]>([]);
   const [sortBy, setSortBy] = useState<'popular' | 'newest' | 'rating'>('popular');
-  const [courses, setCourses] = useState<Course[]>([]);
+  const [syllabus, setSyllabus] = useState<SyllabusType[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    loadCourses();
+    loadSyllabus();
   }, [searchTerm, selectedCategory]);
 
-  const loadCourses = async () => {
+  const loadSyllabus = async () => {
     try {
       setLoading(true);
       const params: { search?: string; category?: string } = {};
       if (searchTerm) params.search = searchTerm;
       if (selectedCategory !== 'all') params.category = selectedCategory;
       
-      const data = await courseService.getCourses(params);
-      setCourses(data.results);
+      const data = await syllabuservice.getSyllabus(params);
+      setSyllabus(data.results);
       setError(null);
     } catch (err) {
-      setError('Failed to load courses. Please try again later.');
+      setError('Failed to load syllabus. Please try again later.');
     } finally {
       setLoading(false);
     }
@@ -93,49 +94,44 @@ export const Courses: React.FC = () => {
     setSortAnchorEl(null);
   };
 
-  const toggleBookmark = (courseId: number) => {
-    setBookmarkedCourses(prev =>
-      prev.includes(courseId)
-        ? prev.filter(id => id !== courseId)
-        : [...prev, courseId]
+  const toggleBookmark = (syllabusId: string) => {
+    setBookmarkedSyllabus(prev =>
+      prev.includes(syllabusId)
+        ? prev.filter(id => id !== syllabusId)
+        : [...prev, syllabusId]
     );
   };
 
-  const handleEnroll = async (courseId: number) => {
+  const handleEnroll = async (syllabusId: string) => {
     try {
-      await courseService.enrollInCourse(courseId);
-      // Refresh courses after enrollment
-      loadCourses();
+      await syllabuservice.enrollInSyllabus(Number(syllabusId));
+      // Refresh syllabus after enrollment
+      loadSyllabus();
     } catch (err) {
-      setError('Failed to enroll in course. Please try again.');
+      setError('Failed to enroll in syllabus. Please try again.');
     }
   };
 
-  const handleUnenroll = async (courseId: number) => {
+  const handleUnenroll = async (syllabusId: string) => {
     try {
-      await courseService.unenrollFromCourse(courseId);
-      // Refresh courses after unenrollment
-      loadCourses();
+      await syllabuservice.unenrollFromSyllabus(Number(syllabusId));
+      // Refresh syllabus after unenrollment
+      loadSyllabus();
     } catch (err) {
-      setError('Failed to unenroll from course. Please try again.');
+      setError('Failed to unenroll from syllabus. Please try again.');
     }
   };
 
-  const isEnrolled = (course: Course) => {
-    return course.students?.some(student => student.id === currentUser?.id) || false;
-  };
-
-  const sortedCourses = [...courses].sort((a, b) => {
+  const sortedSyllabus = [...syllabus].sort((a, b) => {
     switch (sortBy) {
       case 'newest':
-        return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+        return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
       case 'rating':
-        // Since we don't have ratings in our API yet, we'll sort by ID as a fallback
-        return b.id - a.id;
+        return b.rating - a.rating;
       case 'popular':
       default:
-        // Since we don't have enrollment count in our API yet, we'll sort by ID as a fallback
-        return b.id - a.id;
+        // Fallback: sort by id as string
+        return b.id.localeCompare(a.id);
     }
   });
 
@@ -158,7 +154,7 @@ export const Courses: React.FC = () => {
             justifyContent="space-between"
           >
             <TextField
-              placeholder="Search courses..."
+              placeholder="Search syllabus..."
               variant="outlined"
               size="small"
               fullWidth
@@ -239,8 +235,8 @@ export const Courses: React.FC = () => {
               },
               gap: 3
             }}>
-              {sortedCourses.map((course) => (
-                <Zoom in timeout={500} key={course.id}>
+              {sortedSyllabus.map((syllabus) => (
+                <Zoom in timeout={500} key={syllabus.id}>
                   <Card 
                     sx={{ 
                       height: '100%',
@@ -257,13 +253,13 @@ export const Courses: React.FC = () => {
                       <Stack spacing={2}>
                         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                           <Typography variant="h6" component="h2" gutterBottom>
-                            {course.title}
+                            {syllabus.title}
                           </Typography>
                           <IconButton
                             size="small"
-                            onClick={() => toggleBookmark(course.id)}
+                            onClick={() => toggleBookmark(syllabus.id)}
                           >
-                            {bookmarkedCourses.includes(course.id) ? (
+                            {bookmarkedSyllabus.includes(syllabus.id) ? (
                               <BookmarkFilledIcon color="primary" />
                             ) : (
                               <BookmarkIcon />
@@ -272,12 +268,12 @@ export const Courses: React.FC = () => {
                         </Box>
 
                         <Typography variant="body2" color="text.secondary">
-                          {course.description}
+                          {syllabus.description}
                         </Typography>
 
                         <Box>
                           <Chip
-                            label={course.category}
+                            label={syllabus.category.name}
                             size="small"
                             color="primary"
                             variant="outlined"
@@ -290,18 +286,18 @@ export const Courses: React.FC = () => {
                           <Box sx={{ display: 'flex', alignItems: 'center' }}>
                             <BookIcon fontSize="small" sx={{ mr: 0.5 }} />
                             <Typography variant="body2">
-                              {course.instructor.first_name} {course.instructor.last_name}
+                              {syllabus.instructor.firstName} {syllabus.instructor.lastName}
                             </Typography>
                           </Box>
                         </Stack>
 
                         <Button
-                          variant={isEnrolled(course) ? "outlined" : "contained"}
-                          color={isEnrolled(course) ? "error" : "primary"}
+                          variant="contained"
+                          color="primary"
                           fullWidth
-                          onClick={() => isEnrolled(course) ? handleUnenroll(course.id) : handleEnroll(course.id)}
+                          onClick={() => handleEnroll(syllabus.id)}
                         >
-                          {isEnrolled(course) ? "Unenroll" : "Enroll Now"}
+                          Enroll Now
                         </Button>
                       </Stack>
                     </CardContent>

@@ -28,7 +28,7 @@ interface SubjectAnalyticsProps {
     timeSpent: string;
     strengths: string[];
     areasToImprove: string[];
-    courseId: number;
+    syllabusId: number;
   };
   onClose: () => void;
 }
@@ -101,7 +101,7 @@ export const SubjectAnalytics: React.FC<SubjectAnalyticsProps> = ({ subject, onC
                         sx={{ mb: 1 }}
                       >
                         <Typography variant="body2" color="text.secondary">
-                          Course Progress
+                          Syllabus Progress
                         </Typography>
                         <Typography variant="body2" color="text.secondary">
                           {subject.progress}%

@@ -12,7 +12,7 @@ interface Student {
   program: string;
   status: string;
   gpa: number;
-  totalCourses?: number;
+  totalSyllabus?: number;
 }
 
 export const StudentManagement: React.FC = () => {
@@ -35,8 +35,8 @@ export const StudentManagement: React.FC = () => {
     { id: 'enrollmentDate', label: 'Enrollment Date', minWidth: 130, format: (value: string) => new Date(value).toLocaleDateString() },
     { id: 'status', label: 'Status', minWidth: 100 },
     {
-      id: 'totalCourses',
-      label: 'Courses',
+      id: 'totalSyllabus',
+      label: 'Syllabus',
       minWidth: 50,
       align: 'right' as const,
       format: (value: number) => value || 0,

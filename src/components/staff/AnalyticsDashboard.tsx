@@ -11,14 +11,14 @@ import {
 import {
   People,
   School,
-  Assignment,
+  Quiz,
   Grade,
 } from '@mui/icons-material';
 
 export const AnalyticsDashboard: React.FC = () => {
   const performanceMetrics = [
     {
-      title: 'Average Course Completion',
+      title: 'Average Syllabus Completion',
       value: '78%',
       icon: <School sx={{ fontSize: 40, color: 'primary.main' }} />,
       trend: '+5% vs last semester',
@@ -32,9 +32,9 @@ export const AnalyticsDashboard: React.FC = () => {
       progress: 85,
     },
     {
-      title: 'Assignment Submission Rate',
+      title: 'Quiz Submission Rate',
       value: '92%',
-      icon: <Assignment sx={{ fontSize: 40, color: 'info.main' }} />,
+      icon: <Quiz sx={{ fontSize: 40, color: 'info.main' }} />,
       trend: '+8% vs last week',
       progress: 92,
     },
@@ -47,15 +47,15 @@ export const AnalyticsDashboard: React.FC = () => {
     },
   ];
 
-  const courseAnalytics = [
-    { course: 'Computer Science', enrolled: 150, active: 142, completion: 85 },
-    { course: 'Data Structures', enrolled: 120, active: 115, completion: 78 },
-    { course: 'Web Development', enrolled: 200, active: 180, completion: 92 },
-    { course: 'Machine Learning', enrolled: 80, active: 75, completion: 70 },
+  const syllabusAnalytics = [
+    { syllabus: 'Computer Science', enrolled: 150, active: 142, completion: 85 },
+    { syllabus: 'Data Structures', enrolled: 120, active: 115, completion: 78 },
+    { syllabus: 'Web Development', enrolled: 200, active: 180, completion: 92 },
+    { syllabus: 'Machine Learning', enrolled: 80, active: 75, completion: 70 },
   ];
 
   const studentProgress = [
-    { metric: 'Assignments Completed', value: 450, total: 500, percent: 90 },
+    { metric: 'Quizs Completed', value: 450, total: 500, percent: 90 },
     { metric: 'Average Quiz Score', value: 85, total: 100, percent: 85 },
     { metric: 'Discussion Participation', value: 120, total: 150, percent: 80 },
     { metric: 'Project Submissions', value: 28, total: 30, percent: 93 },
@@ -104,9 +104,9 @@ export const AnalyticsDashboard: React.FC = () => {
         ))}
       </Box>
 
-      {/* Course Analytics */}
+      {/* Syllabus Analytics */}
       <Paper sx={{ p: 3, mb: 4 }}>
-        <Typography variant="h6" gutterBottom>Course Analytics</Typography>
+        <Typography variant="h6" gutterBottom>Syllabus Analytics</Typography>
         <Box sx={{ 
           display: 'grid',
           gridTemplateColumns: {
@@ -116,27 +116,27 @@ export const AnalyticsDashboard: React.FC = () => {
           },
           gap: 3
         }}>
-          {courseAnalytics.map((course, index) => (
+          {syllabusAnalytics.map((syllabus, index) => (
             <Box key={index}>
               <Typography variant="subtitle1" gutterBottom>
-                {course.course}
+                {syllabus.syllabus}
               </Typography>
               <Stack spacing={1}>
                 <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
                   <Typography variant="body2">Enrolled</Typography>
-                  <Typography variant="body2">{course.enrolled}</Typography>
+                  <Typography variant="body2">{syllabus.enrolled}</Typography>
                 </Box>
                 <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
                   <Typography variant="body2">Active</Typography>
-                  <Typography variant="body2">{course.active}</Typography>
+                  <Typography variant="body2">{syllabus.active}</Typography>
                 </Box>
                 <Box>
                   <Typography variant="body2" gutterBottom>
-                    Completion Rate: {course.completion}%
+                    Completion Rate: {syllabus.completion}%
                   </Typography>
                   <LinearProgress
                     variant="determinate"
-                    value={course.completion}
+                    value={syllabus.completion}
                     sx={{ height: 6, borderRadius: 1 }}
                   />
                 </Box>

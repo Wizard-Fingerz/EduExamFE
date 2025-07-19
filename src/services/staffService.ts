@@ -20,15 +20,15 @@ export interface Staff {
 
 export interface StaffDashboardStats {
   total_students: number;
-  total_courses: number;
+  total_syllabus: number;
   total_exams: number;
   active_exams: number;
   recent_enrollments: number;
-  average_course_rating: number;
+  average_syllabus_rating: number;
   total_revenue: number;
 }
 
-export interface StaffCourse {
+export interface StaffSyllabus {
   id: number;
   title: string;
   description: string;
@@ -71,11 +71,11 @@ export interface StaffExam {
   questions?: any[];
 }
 
-export interface StaffAssignment {
+export interface StaffQuiz {
   id: number;
   title: string;
   description: string;
-  course: StaffCourse;
+  syllabus: StaffSyllabus;
   due_date: string;
   total_points: number;
   is_published: boolean;
@@ -104,12 +104,12 @@ const staffService = {
     return response.data;
   },
 
-  // Courses Management
-  async getStaffCourses() {
+  // Syllabus Management
+  async getStaffSyllabus() {
     try {
-      console.log('Fetching staff courses...');
-      const response = await api.get('/courses/staff/');
-      console.log('Staff courses response:', response);
+      console.log('Fetching staff syllabus...');
+      const response = await api.get('/syllabus/staff/');
+      console.log('Staff syllabus response:', response);
       
       if (!response.data) {
         console.error('No data received from server');
@@ -117,20 +117,20 @@ const staffService = {
       }
       
       // Handle both array and paginated responses
-      const coursesData = response.data.results || response.data;
-      console.log('Processed courses data:', coursesData);
+      const syllabusData = response.data.results || response.data;
+      console.log('Processed syllabus data:', syllabusData);
       
-      if (!Array.isArray(coursesData)) {
-        console.error('Invalid courses data format:', coursesData);
+      if (!Array.isArray(syllabusData)) {
+        console.error('Invalid syllabus data format:', syllabusData);
         throw new Error('Invalid data format received from server');
       }
       
-      return coursesData;
+      return syllabusData;
     } catch (error: any) {
-      console.error('Error fetching staff courses:', error);
+      console.error('Error fetching staff syllabus:', error);
       if (error.response) {
         console.error('Error response:', error.response.data);
-        throw new Error(error.response.data.detail || 'Failed to fetch courses');
+        throw new Error(error.response.data.detail || 'Failed to fetch syllabus');
       }
       throw error;
     }
@@ -139,7 +139,7 @@ const staffService = {
   async getStaffSubjects() {
     try {
       console.log('Fetching staff subject...');
-      const response = await api.get('/courses/subjects/');
+      const response = await api.get('/syllabus/subjects/');
       console.log('Staff subject response:', response);
       
       if (!response.data) {
@@ -149,67 +149,67 @@ const staffService = {
       
       // Handle both array and paginated responses
       const subjectsData = response.data.results || response.data;
-      console.log('Processed courses data:', subjectsData);
+      console.log('Processed syllabus data:', subjectsData);
       
       if (!Array.isArray(subjectsData)) {
-        console.error('Invalid courses data format:', subjectsData);
+        console.error('Invalid syllabus data format:', subjectsData);
         throw new Error('Invalid data format received from server');
       }
       
       return subjectsData;
     } catch (error: any) {
-      console.error('Error fetching staff courses:', error);
+      console.error('Error fetching staff syllabus:', error);
       if (error.response) {
         console.error('Error response:', error.response.data);
-        throw new Error(error.response.data.detail || 'Failed to fetch courses');
+        throw new Error(error.response.data.detail || 'Failed to fetch syllabus');
       }
       throw error;
     }
   },
 
 
-  async createCourse(data: Partial<StaffCourse>) {
+  async createSyllabus(data: Partial<StaffSyllabus>) {
     try {
       // Ensure required fields are present
       if (!data.title || !data.description || !data.category || !data.level || !data.duration) {
         throw new Error('Missing required fields: title, description, category, level, and duration are required');
       }
 
-      const response = await api.post('/courses/staff/create/', data);
+      const response = await api.post('/syllabus/staff/create/', data);
       if (!response.data) {
         throw new Error('No data received from server');
       }
       return response.data;
     } catch (error) {
-      console.error('Error creating course:', error);
+      console.error('Error creating syllabus:', error);
       throw error;
     }
   },
 
-  async updateCourse(courseId: number, data: Partial<StaffCourse>) {
+  async updateSyllabus(syllabusId: number, data: Partial<StaffSyllabus>) {
     try {
-      const response = await api.patch(`/courses/staff/${courseId}/update/`, data);
+      const response = await api.patch(`/syllabus/staff/${syllabusId}/update/`, data);
       if (!response.data) {
         throw new Error('No data received from server');
       }
       return response.data;
     } catch (error) {
-      console.error('Error updating course:', error);
+      console.error('Error updating syllabus:', error);
       throw error;
     }
   },
 
-  async deleteCourse(courseId: number) {
+  async deleteSyllabus(syllabusId: number) {
     try {
-      await api.delete(`/courses/staff/${courseId}/delete/`);
+      await api.delete(`/syllabus/staff/${syllabusId}/delete/`);
     } catch (error) {
-      console.error('Error deleting course:', error);
+      console.error('Error deleting syllabus:', error);
       throw error;
     }
   },
 
-  async getCourseAnalytics(courseId: number) {
-    const response = await api.get(`/courses/staff/${courseId}/analytics/`);
+  async getSyllabusAnalytics(syllabusId: number) {
+    const response = await api.get(`/syllabus/staff/${syllabusId}/analytics/`);
     return response.data;
   },
 
@@ -331,13 +331,13 @@ const staffService = {
     return response.data;
   },
 
-  async getEnrolledStudents(courseId: number) {
-    const response = await api.get(`/courses/${courseId}/students/`);
+  async getEnrolledStudents(syllabusId: number) {
+    const response = await api.get(`/syllabus/${syllabusId}/students/`);
     return response.data;
   },
 
-  async getStudentProgress(studentId: number, courseId: number) {
-    const response = await api.get(`/progress/students/${studentId}/courses/${courseId}/`);
+  async getStudentProgress(studentId: number, syllabusId: number) {
+    const response = await api.get(`/progress/students/${studentId}/syllabus/${syllabusId}/`);
     return response.data;
   },
 
@@ -347,8 +347,8 @@ const staffService = {
   },
 
   // Reports
-  async generateCourseReport(courseId: number, startDate: string, endDate: string) {
-    const response = await api.get(`/courses/${courseId}/reports/`, {
+  async generateSyllabusReport(syllabusId: number, startDate: string, endDate: string) {
+    const response = await api.get(`/syllabus/${syllabusId}/reports/`, {
       params: { start_date: startDate, end_date: endDate }
     });
     return response.data;
@@ -364,41 +364,41 @@ const staffService = {
     return response.data;
   },
 
-  // Assignment Management
-  async getAssignments() {
+  // Quiz Management
+  async getQuizs() {
     try {
-      const response = await api.get('/courses/staff/quiz/');
+      const response = await api.get('/syllabus/staff/quiz/');
       return response.data;
     } catch (error: any) {
-      console.error('Error fetching assignments:', error);
+      console.error('Error fetching quizs:', error);
       if (error.response) {
         console.error('Error response:', error.response.data);
-        throw new Error(error.response.data.detail || 'Failed to fetch assignments');
+        throw new Error(error.response.data.detail || 'Failed to fetch quizs');
       }
       throw error;
     }
   },
 
-  async getStaffAssignment(assignmentId: number) {
+  async getStaffQuiz(quizId: number) {
     try {
-      const response = await api.get(`/courses/staff/quiz/${assignmentId}/`);
+      const response = await api.get(`/syllabus/staff/quiz/${quizId}/`);
       return response.data;
     } catch (error: any) {
-      console.error('Error fetching assignment:', error);
+      console.error('Error fetching quiz:', error);
       throw error;
     }
   },
 
-  async createAssignment(data: Partial<StaffAssignment>) {
+  async createQuiz(data: Partial<StaffQuiz>) {
     try {
-      console.log('Creating assignment with data:', data);
+      console.log('Creating quiz with data:', data);
       
-      if (!data.course) {
-        throw new Error('Course ID is required to create an assignment');
+      if (!data.syllabus) {
+        throw new Error('Syllabus ID is required to create an quiz');
       }
       
-      const response = await api.post(`/courses/staff/syllabus/${data.course}/assignments/create/`, data);
-      console.log('Assignment creation response:', response);
+      const response = await api.post(`/syllabus/staff/syllabus/${data.syllabus}/quizs/create/`, data);
+      console.log('Quiz creation response:', response);
       
       if (!response.data) {
         throw new Error('No data received from server');
@@ -406,92 +406,92 @@ const staffService = {
       
       return response.data;
     } catch (error: any) {
-      console.error('Error creating assignment:', error);
+      console.error('Error creating quiz:', error);
       if (error.response) {
         console.error('Error response:', error.response.data);
-        throw new Error(error.response.data.detail || 'Failed to create assignment');
+        throw new Error(error.response.data.detail || 'Failed to create quiz');
       }
       throw error;
     }
   },
 
-  async updateAssignment(assignmentId: string, data: Partial<StaffAssignment>) {
+  async updateQuiz(quizId: string, data: Partial<StaffQuiz>) {
     try {
-      const response = await api.patch(`/courses/staff/quiz/${assignmentId}/update/`, data);
+      const response = await api.patch(`/syllabus/staff/quiz/${quizId}/update/`, data);
       if (!response.data) {
         throw new Error('No data received from server');
       }
       return response.data;
     } catch (error: any) {
-      console.error('Error updating assignment:', error);
+      console.error('Error updating quiz:', error);
       if (error.response) {
         console.error('Error response:', error.response.data);
-        throw new Error(error.response.data.detail || 'Failed to update assignment');
+        throw new Error(error.response.data.detail || 'Failed to update quiz');
       }
       throw error;
     }
   },
 
-  async deleteAssignment(assignmentId: string) {
+  async deleteQuiz(quizId: string) {
     try {
-      await api.delete(`/courses/staff/quiz/${assignmentId}/delete/`);
+      await api.delete(`/syllabus/staff/quiz/${quizId}/delete/`);
     } catch (error: any) {
-      console.error('Error deleting assignment:', error);
+      console.error('Error deleting quiz:', error);
       if (error.response) {
         console.error('Error response:', error.response.data);
-        throw new Error(error.response.data.detail || 'Failed to delete assignment');
+        throw new Error(error.response.data.detail || 'Failed to delete quiz');
       }
       throw error;
     }
   },
 
-  // Assignment Questions Management
-  async getAssignmentQuestions(assignmentId: number) {
+  // Quiz Questions Management
+  async getQuizQuestions(quizId: number) {
     try {
-      const response = await api.get(`/courses/staff/quiz/${assignmentId}/questions/`);
+      const response = await api.get(`/syllabus/staff/quiz/${quizId}/questions/`);
       return response.data;
     } catch (error: any) {
-      console.error('Error fetching assignment questions:', error);
+      console.error('Error fetching quiz questions:', error);
       return [];
     }
   },
 
-  async createAssignmentQuestion(assignmentId: number, questionData: any) {
+  async createQuizQuestion(quizId: number, questionData: any) {
     try {
-      const response = await api.post(`/courses/staff/quiz/${assignmentId}/questions/`, questionData);
+      const response = await api.post(`/syllabus/staff/quiz/${quizId}/questions/`, questionData);
       return response.data;
     } catch (error: any) {
-      console.error('Error creating assignment question:', error);
+      console.error('Error creating quiz question:', error);
       throw error;
     }
   },
 
-  async updateAssignmentQuestion(_assignmentId: number, questionId: number, questionData: any) {
+  async updateQuizQuestion(_quizId: number, questionId: number, questionData: any) {
     try {
-      const response = await api.patch(`/courses/staff/assignment-questions/${questionId}/`, questionData);
+      const response = await api.patch(`/syllabus/staff/quiz-questions/${questionId}/`, questionData);
       return response.data;
     } catch (error: any) {
-      console.error('Error updating assignment question:', error);
+      console.error('Error updating quiz question:', error);
       throw error;
     }
   },
 
-  async deleteAssignmentQuestion(_assignmentId: number, questionId: number) {
+  async deleteQuizQuestion(_quizId: number, questionId: number) {
     try {
-      await api.delete(`/courses/staff/assignment-questions/${questionId}/`);
+      await api.delete(`/syllabus/staff/quiz-questions/${questionId}/`);
     } catch (error: any) {
-      console.error('Error deleting assignment question:', error);
+      console.error('Error deleting quiz question:', error);
       throw error;
     }
   },
 
-  async getAssignmentSubmissions(assignmentId: string) {
-    const response = await api.get(`/courses/assignments/${assignmentId}/submissions/`);
+  async getQuizSubmissions(quizId: string) {
+    const response = await api.get(`/syllabus/quizs/${quizId}/submissions/`);
     return response.data;
   },
 
-  async gradeSubmission(assignmentId: string, submissionId: string, grade: number, feedback: string) {
-    const response = await api.post(`/courses/assignments/${assignmentId}/submissions/${submissionId}/grade/`, {
+  async gradeSubmission(quizId: string, submissionId: string, grade: number, feedback: string) {
+    const response = await api.post(`/syllabus/quizs/${quizId}/submissions/${submissionId}/grade/`, {
       grade,
       feedback
     });

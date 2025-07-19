@@ -13,7 +13,7 @@ import {
 } from '@mui/material';
 import {
   School as SchoolIcon,
-  Assignment as AssignmentIcon,
+  Quiz as QuizIcon,
   Timer as TimerIcon,
   People as PeopleIcon,
   Star as StarIcon,
@@ -121,13 +121,13 @@ export const StaffDashboard: React.FC = () => {
             >
               <Stack spacing={2}>
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                  <AssignmentIcon color="primary" />
+                  <QuizIcon color="primary" />
                   <Typography variant="h6" color="text.secondary">
-                    Total Courses
+                    Total Syllabus
                   </Typography>
                 </Box>
                 <Typography variant="h4" fontWeight="bold">
-                  {stats?.total_courses || 0}
+                  {stats?.total_syllabus || 0}
                 </Typography>
               </Stack>
             </Paper>
@@ -206,12 +206,12 @@ export const StaffDashboard: React.FC = () => {
             <Card sx={{ height: '100%' }}>
               <CardContent>
                 <Typography variant="h6" gutterBottom>
-                  Average Course Rating
+                  Average Syllabus Rating
                 </Typography>
                 <Stack direction="row" alignItems="center" spacing={1}>
                   <StarIcon color="warning" />
                   <Typography variant="h4" fontWeight="bold">
-                    {stats?.average_course_rating?.toFixed(1) || 0}
+                    {stats?.average_syllabus_rating?.toFixed(1) || 0}
                   </Typography>
                 </Stack>
                 <Typography variant="body2" color="text.secondary">

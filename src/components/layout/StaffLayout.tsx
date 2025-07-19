@@ -29,7 +29,7 @@ import {
   Notifications as NotificationsIcon,
   Settings as SettingsIcon,
   LibraryBooks as LibraryBooksIcon,
-  Assignment as AssignmentIcon,
+  Quiz as QuizIcon,
   People as PeopleIcon,
   Analytics as AnalyticsIcon,
   Logout as LogoutIcon,
@@ -40,7 +40,7 @@ import { useAuth } from '../../context/AuthContext';
 // import DashboardIcon from '@mui/icons-material/Dashboard';
 // import AssessmentIcon from '@mui/icons-material/Assessment';
 // import LibraryBooksIcon from '@mui/icons-material/LibraryBooks';
-// import AssignmentIcon from '@mui/icons-material/Assignment';
+// import QuizIcon from '@mui/icons-material/Quiz';
 // import PeopleIcon from '@mui/icons-material/People';
 // import AnalyticsIcon from '@mui/icons-material/Analytics';
 
@@ -69,7 +69,7 @@ export const StaffLayout: React.FC = () => {
     { text: 'Staff Dashboard', icon: <DashboardIcon />, path: '/staff/dashboard', badge: '' },
     { text: 'Manage Exams', icon: <AssessmentIcon />, path: '/staff/exams',badge: '' },
     { text: 'Manage Syllabus', icon: <LibraryBooksIcon />, path: '/staff/syllabus',badge: '' },
-    { text: 'Quiz', icon: <AssignmentIcon />, path: '/staff/quiz',badge: '' },
+    { text: 'Quiz', icon: <QuizIcon />, path: '/staff/quiz',badge: '' },
     { text: 'Students', icon: <PeopleIcon />, path: '/staff/students',badge: '' },
     { text: 'Analytics', icon: <AnalyticsIcon />, path: '/staff/analytics',badge: '' },
   ];
