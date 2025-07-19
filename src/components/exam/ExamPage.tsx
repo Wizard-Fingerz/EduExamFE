@@ -24,15 +24,12 @@ import {
   Timer as TimerIcon,
   Assignment as AssignmentIcon,
   School as SchoolIcon,
-  // NavigateNext as NextIcon,
-  // NavigateBefore as PrevIcon,
-  ArrowBack,
-  Save as SaveIcon,
-  Check as SubmitIcon,
+  NavigateNext as NextIcon,
+  NavigateBefore as PrevIcon,
 } from '@mui/icons-material';
 import { useNavigate, useParams } from 'react-router-dom';
 // import { useAuth } from '../../context/AuthContext';
-import examService, { Answer, Question } from '../../services/examService';
+import examService, {  Question } from '../../services/examService';
 
 interface ExamData {
   id: number;
@@ -51,7 +48,7 @@ export const ExamPage: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [examData, setExamData] = useState<ExamData | null>(null);
   const [currentQuestion, setCurrentQuestion] = useState(0);
-  const [answers, setAnswers] = useState<number[]>([]);
+  const [answers, setAnswers] = useState<(number | string)[]>([]);
   const [timeLeft, setTimeLeft] = useState<number>(0);
   const [examStarted, setExamStarted] = useState(false);
   const [attemptId, setAttemptId] = useState<number | null>(null);
@@ -80,12 +77,14 @@ export const ExamPage: React.FC = () => {
           questions: exam.questions.map((q: { 
             id: number;
             question_text: string;
+            question_type: string;
             choices: Array<{ choice_text: string; is_correct: boolean }>;
           }) => ({
             id: q.id,
             text: q.question_text,
-            options: q.choices.map((choice) => choice.choice_text),
-            correctAnswer: q.choices.findIndex((choice) => choice.is_correct)
+            question_type: q.question_type,
+            options: q.choices?.map((choice) => choice.choice_text) || [],
+            correctAnswer: q.choices?.findIndex((choice) => choice.is_correct),
           }))
         };
 
@@ -134,9 +133,13 @@ export const ExamPage: React.FC = () => {
     }
   };
 
-  const handleAnswerChange = (questionIndex: number, answerIndex: number) => {
+  const handleAnswerChange = (questionIndex: number, answer: number | string) => {
     const newAnswers = [...answers];
-    newAnswers[questionIndex] = answerIndex;
+    if (typeof answer === 'number') {
+      newAnswers[questionIndex] = answer;
+    } else {
+      newAnswers[questionIndex] = answer;
+    }
     setAnswers(newAnswers);
   };
 
@@ -154,9 +157,9 @@ export const ExamPage: React.FC = () => {
 
   const handleSubmitExam = async () => {
     if (submitting) return; // Prevent multiple submissions
+    setSubmitting(true);
     
     try {
-      setSubmitting(true);
       setError(null);
 
       if (!examData || !attemptId) {
@@ -164,30 +167,42 @@ export const ExamPage: React.FC = () => {
       }
 
       // Convert answers to the format expected by the API
-      const formattedAnswers: Answer[] = answers.map((answer, index) => {
+      const formattedAnswers = answers.map((answer, index) => {
         const question = examData.questions[index];
         if (answer === -1) return null; // Skip unanswered questions
-        
+
         return {
           question: question.id,
-          answer: question.options?.[answer] ?? '' // Handle undefined options safely
+          answer_text: question.question_type === 'short_answer' ? answer : question.options?.[answer as number] ?? ''
         };
-      }).filter((answer): answer is Answer => answer !== null); // Remove null answers
+      }).filter((answer): answer is { question: number, answer_text: string } => answer !== null);
 
       if (formattedAnswers.length === 0) {
         throw new Error('Please answer at least one question before submitting');
       }
 
       // Submit the exam
-      const result = await examService.submitExam(attemptId, formattedAnswers);
-      
+      const result = await examService.submitExam(
+        attemptId,
+        formattedAnswers.map(ans => ({
+          question: ans.question,
+          answer_text: ans.answer_text,
+          answer: ans.answer_text // Use answer_text as answer to satisfy type
+        }))
+      );
+      console.log('Exam submission result:', result);
+      if (!result || typeof result.score === 'undefined') {
+        setError('Submission failed: Invalid response from server.');
+        setSubmitting(false);
+        return;
+      }
       // Navigate to results page
       navigate(`/exam/result/${examData.id}`, { 
         state: { 
           score: result.score,
-          totalQuestions: examData.totalQuestions,
-          passingScore: examData.passingScore,
-          attemptId: attemptId,
+          totalQuestions: result.totalQuestions,
+          passingScore: result.passingScore,
+          attemptId: result.attemptId,
           answers: formattedAnswers
         }
       });
@@ -307,98 +322,160 @@ export const ExamPage: React.FC = () => {
     );
   }
 
-  const currentQ = examData?.questions[currentQuestion];
   return (
-    <Box sx={{ p: { xs: 1, sm: 2, md: 4 }, bgcolor: 'grey.50', minHeight: '100vh' }}>
-      {/* Header */}
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3, flexWrap: 'wrap', gap: 2 }}>
-        <Button variant="text" color="primary" sx={{ display: 'flex', alignItems: 'center' }} onClick={() => navigate(-1)}>
-          <ArrowBack sx={{ mr: 1 }} />
-          <Typography variant="body1">Back</Typography>
-        </Button>
-        <Box sx={{ display: 'flex', gap: 2 }}>
-          <Button variant="contained" color="success" startIcon={<SubmitIcon />} onClick={handleSubmitExam} disabled={submitting}>
-            {submitting ? 'Submitting...' : 'Submit Exam'}
-          </Button>
-          <Button variant="contained" color="success" startIcon={<SaveIcon />}>Save & Exit</Button>
-        </Box>
-      </Box>
-
-      {/* Main Content */}
-      <Box sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' }, justifyContent: 'space-between', mb: 3, gap: { xs: 3, md: 0 } }}>
-        {/* Left: Question Area */}
-        <Box sx={{ width: { xs: '100%', md: '50vw' }, bgcolor: 'white', p: { xs: 1, sm: 3 }, borderRadius: 2, boxShadow: 3, mx: 'auto', mb: { xs: 3, md: 0 } }}>
-          <Typography variant="h4">{examData?.title}</Typography>
-          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
-            <Typography variant="h6">Question {currentQuestion + 1} / {examData?.totalQuestions}</Typography>
-          </Box>
+    <Container maxWidth="md">
+      <Fade in timeout={800}>
+        <Box sx={{ py: 4 }}>
           {error && (
-            <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>
+            <Alert severity="error" sx={{ mb: 3 }}>
+              {error}
+            </Alert>
           )}
-          <Typography variant="h6" sx={{ mb: 2 }}>{currentQ?.text}</Typography>
-          <FormControl component="fieldset" sx={{ width: '100%' }}>
-            <RadioGroup
-              value={answers[currentQuestion]}
-              onChange={(e) => handleAnswerChange(currentQuestion, parseInt(e.target.value))}
+
+          <Paper 
+            elevation={0}
+            sx={{ 
+              p: 3, 
+              mb: 3, 
+              borderRadius: 2,
+              border: '1px solid',
+              borderColor: 'divider',
+              bgcolor: 'background.paper'
+            }}
+          >
+            <Stack direction="row" justifyContent="space-between" alignItems="center">
+              <Typography variant="h6">
+                Question {currentQuestion + 1} of {examData?.totalQuestions}
+              </Typography>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                <TimerIcon color="primary" />
+                <Typography variant="h6" color="primary">
+                  {formatTime(timeLeft)}
+                </Typography>
+              </Box>
+            </Stack>
+          </Paper>
+
+          <Card>
+            <CardContent>
+              <Stack spacing={3}>
+                <Typography variant="h6">
+                  {examData?.questions[currentQuestion].text}
+                </Typography>
+
+                {(() => {
+                  const q = examData?.questions[currentQuestion];
+                  if (!q) return null;
+                  switch (q.question_type) {
+                    case 'multiple_choice':
+                      return (
+                        <FormControl component="fieldset">
+                          <RadioGroup
+                            value={answers[currentQuestion]}
+                            onChange={(e) => handleAnswerChange(currentQuestion, parseInt(e.target.value))}
+                          >
+                            {(q.options || []).map((option, index) => (
+                              <FormControlLabel
+                                key={index}
+                                value={index}
+                                control={<Radio />}
+                                label={option}
+                                sx={{
+                                  p: 1,
+                                  borderRadius: 1,
+                                  '&:hover': {
+                                    bgcolor: 'action.hover',
+                                  },
+                                }}
+                              />
+                            ))}
+                          </RadioGroup>
+                        </FormControl>
+                      );
+                    case 'true_false':
+                      return (
+                        <FormControl component="fieldset">
+                          <RadioGroup
+                            value={answers[currentQuestion]}
+                            onChange={(e) => handleAnswerChange(currentQuestion, parseInt(e.target.value))}
+                          >
+                            <FormControlLabel value={0} control={<Radio />} label="True" />
+                            <FormControlLabel value={1} control={<Radio />} label="False" />
+                          </RadioGroup>
+                        </FormControl>
+                      );
+                    case 'short_answer':
+                      return (
+                        <FormControl fullWidth>
+                          <textarea
+                            value={answers[currentQuestion] === -1 ? '' : answers[currentQuestion]}
+                            onChange={(e) => handleAnswerChange(currentQuestion, e.target.value)}
+                            style={{ width: '100%', padding: 8, fontSize: 16, minHeight: 80 }}
+                          />
+                        </FormControl>
+                      );
+                    // Add more cases for other types if needed
+                    default:
+                      return <Typography color="error">Unknown question type</Typography>;
+                  }
+                })()}
+              </Stack>
+            </CardContent>
+          </Card>
+
+          <Box sx={{ 
+            display: 'flex', 
+            justifyContent: 'space-between', 
+            mt: 3,
+            gap: 2
+          }}>
+            <Button
+              variant="outlined"
+              startIcon={<PrevIcon />}
+              onClick={handlePrevQuestion}
+              disabled={currentQuestion === 0}
             >
-              {currentQ?.options?.map((option, index) => (
-                <FormControlLabel
-                  key={index}
-                  value={index}
-                  control={<Radio />}
-                  label={option}
-                  sx={{
-                    p: 1.5,
-                    borderRadius: 2,
-                    bgcolor: answers[currentQuestion] === index ? 'primary.50' : 'background.paper',
-                    boxShadow: answers[currentQuestion] === index ? 2 : 0,
-                    '&:hover': { bgcolor: 'action.hover' },
-                    transition: 'all 0.2s',
-                  }}
-                />
-              ))}
-            </RadioGroup>
-          </FormControl>
-          <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 3 }}>
-            <Button variant="contained" color="success" onClick={handlePrevQuestion} disabled={currentQuestion === 0}>
               Previous
             </Button>
-            <Button variant="contained" color="success" onClick={handleNextQuestion} disabled={currentQuestion === (examData?.totalQuestions || 0) - 1}>
-              Next
-            </Button>
-          </Box>
-          {/* Question Navigation Grid */}
-          <Box sx={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between', mt: 5 }}>
-            {examData?.questions.map((q, idx) => (
+            {currentQuestion === (examData?.totalQuestions || 0) - 1 ? (
               <Button
-                key={q.id}
-                variant={answers[idx] !== -1 ? 'contained' : 'outlined'}
-                color={currentQuestion === idx ? 'primary' : answers[idx] !== -1 ? 'success' : 'secondary'}
-                sx={{ m: 0.5, minWidth: 40, minHeight: 40, borderRadius: '50%' }}
-                onClick={() => setCurrentQuestion(idx)}
+                variant="contained"
+                color="primary"
+                onClick={handleSubmitExam}
+                disabled={submitting}
               >
-                {idx + 1}
+                {submitting ? (
+                  <>
+                    <CircularProgress size={20} sx={{ mr: 1 }} />
+                    Submitting...
+                  </>
+                ) : (
+                  'Submit Exam'
+                )}
               </Button>
-            ))}
+            ) : (
+              <Button
+                variant="contained"
+                endIcon={<NextIcon />}
+                onClick={handleNextQuestion}
+              >
+                Next
+              </Button>
+            )}
+          </Box>
+
+          <Box sx={{ mt: 4 }}>
+            <Typography variant="body2" gutterBottom>
+              Progress
+            </Typography>
+            <LinearProgress
+              variant="determinate"
+              value={((currentQuestion + 1) / (examData?.totalQuestions || 1)) * 100}
+              sx={{ height: 8, borderRadius: 4 }}
+            />
           </Box>
         </Box>
-        {/* Right: Sidebar */}
-        <Box sx={{ pl: { xs: 0, md: 2 }, width: { xs: '100%', md: 'auto' }, minWidth: 220 }}>
-          <Paper sx={{ p: 3, mb: 3, textAlign: 'center', borderRadius: 2, boxShadow: 2 }}>
-            <Typography variant="h6" color="primary" sx={{ mb: 1 }}>Time Left</Typography>
-            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', mb: 1 }}>
-              <TimerIcon color="primary" sx={{ mr: 1 }} />
-              <Typography variant="h5" color="primary" fontWeight={700}>{formatTime(timeLeft)}</Typography>
-            </Box>
-            <LinearProgress variant="determinate" value={((timeLeft / ((examData?.duration || 1) * 60)) * 100)} sx={{ height: 8, borderRadius: 4 }} />
-          </Paper>
-          {/* Calculator placeholder */}
-          <Paper sx={{ p: 3, textAlign: 'center', borderRadius: 2, boxShadow: 2 }}>
-            <Typography variant="subtitle1" color="text.secondary">Calculator</Typography>
-            <Typography variant="caption" color="text.secondary">(Coming soon)</Typography>
-          </Paper>
-        </Box>
-      </Box>
-    </Box>
+      </Fade>
+    </Container>
   );
 }; 

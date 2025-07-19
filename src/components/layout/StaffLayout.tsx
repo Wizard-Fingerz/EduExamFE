@@ -68,8 +68,8 @@ export const StaffLayout: React.FC = () => {
   const mainMenuItems = [
     { text: 'Staff Dashboard', icon: <DashboardIcon />, path: '/staff/dashboard', badge: '' },
     { text: 'Manage Exams', icon: <AssessmentIcon />, path: '/staff/exams',badge: '' },
-    { text: 'Manage Courses', icon: <LibraryBooksIcon />, path: '/staff/courses',badge: '' },
-    { text: 'Assignments', icon: <AssignmentIcon />, path: '/staff/assignments',badge: '' },
+    { text: 'Manage Syllabus', icon: <LibraryBooksIcon />, path: '/staff/syllabus',badge: '' },
+    { text: 'Quiz', icon: <AssignmentIcon />, path: '/staff/quiz',badge: '' },
     { text: 'Students', icon: <PeopleIcon />, path: '/staff/students',badge: '' },
     { text: 'Analytics', icon: <AnalyticsIcon />, path: '/staff/analytics',badge: '' },
   ];

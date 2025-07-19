@@ -158,11 +158,11 @@ export const AssignmentManagement: React.FC = () => {
         // Update the assignment in the local state
         setAssignments(assignments.map(a => a.id === assignment.id ? updatedAssignment : a));
       }
-      navigate(`/staff/assignments/${assignment.id}/questions`);
+      navigate(`/staff/quiz/${assignment.id}/questions`);
     } catch (error) {
       console.error('Error fetching assignment questions:', error);
       // Still navigate even if questions fetch fails
-      navigate(`/staff/assignments/${assignment.id}/questions`);
+      navigate(`/staff/quiz/${assignment.id}/questions`);
     }
   };
 

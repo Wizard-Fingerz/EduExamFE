@@ -367,7 +367,7 @@ const staffService = {
   // Assignment Management
   async getAssignments() {
     try {
-      const response = await api.get('/courses/staff/assignments/');
+      const response = await api.get('/courses/staff/quiz/');
       return response.data;
     } catch (error: any) {
       console.error('Error fetching assignments:', error);
@@ -381,7 +381,7 @@ const staffService = {
 
   async getStaffAssignment(assignmentId: number) {
     try {
-      const response = await api.get(`/courses/staff/assignments/${assignmentId}/`);
+      const response = await api.get(`/courses/staff/quiz/${assignmentId}/`);
       return response.data;
     } catch (error: any) {
       console.error('Error fetching assignment:', error);
@@ -397,7 +397,7 @@ const staffService = {
         throw new Error('Course ID is required to create an assignment');
       }
       
-      const response = await api.post(`/courses/staff/courses/${data.course}/assignments/create/`, data);
+      const response = await api.post(`/courses/staff/syllabus/${data.course}/assignments/create/`, data);
       console.log('Assignment creation response:', response);
       
       if (!response.data) {
@@ -417,7 +417,7 @@ const staffService = {
 
   async updateAssignment(assignmentId: string, data: Partial<StaffAssignment>) {
     try {
-      const response = await api.patch(`/courses/staff/assignments/${assignmentId}/update/`, data);
+      const response = await api.patch(`/courses/staff/quiz/${assignmentId}/update/`, data);
       if (!response.data) {
         throw new Error('No data received from server');
       }
@@ -434,7 +434,7 @@ const staffService = {
 
   async deleteAssignment(assignmentId: string) {
     try {
-      await api.delete(`/courses/staff/assignments/${assignmentId}/delete/`);
+      await api.delete(`/courses/staff/quiz/${assignmentId}/delete/`);
     } catch (error: any) {
       console.error('Error deleting assignment:', error);
       if (error.response) {
@@ -448,7 +448,7 @@ const staffService = {
   // Assignment Questions Management
   async getAssignmentQuestions(assignmentId: number) {
     try {
-      const response = await api.get(`/courses/staff/assignments/${assignmentId}/questions/`);
+      const response = await api.get(`/courses/staff/quiz/${assignmentId}/questions/`);
       return response.data;
     } catch (error: any) {
       console.error('Error fetching assignment questions:', error);
@@ -458,7 +458,7 @@ const staffService = {
 
   async createAssignmentQuestion(assignmentId: number, questionData: any) {
     try {
-      const response = await api.post(`/courses/staff/assignments/${assignmentId}/questions/`, questionData);
+      const response = await api.post(`/courses/staff/quiz/${assignmentId}/questions/`, questionData);
       return response.data;
     } catch (error: any) {
       console.error('Error creating assignment question:', error);

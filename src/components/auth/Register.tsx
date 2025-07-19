@@ -16,6 +16,8 @@ import {
   Select,
   MenuItem,
   SelectChangeEvent,
+  useTheme,
+  useMediaQuery,
 } from '@mui/material';
 import {
   Visibility,
@@ -37,6 +39,8 @@ interface RegisterFormData {
 export const Register: React.FC = () => {
   const { register } = useAuth();
   const navigate = useNavigate();
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -147,7 +151,7 @@ export const Register: React.FC = () => {
               </Alert>
             )}
 
-            <Stack direction="row" spacing={2}>
+            <Stack direction={isMobile ? 'column' : 'row'} spacing={2}>
               <TextField
                 required
                 fullWidth
