@@ -41,6 +41,7 @@ import { Syllabus as SyllabusType } from '../../types';
 export const Syllabus: React.FC = () => {
   // const navigate = useNavigate();
   const { user: currentUser } = useAuth();
+  console.log('Current user:', currentUser);
   const [searchTerm, setSearchTerm] = useState('');
   const [filterAnchorEl, setFilterAnchorEl] = useState<null | HTMLElement>(null);
   const [sortAnchorEl, setSortAnchorEl] = useState<null | HTMLElement>(null);
@@ -112,15 +113,15 @@ export const Syllabus: React.FC = () => {
     }
   };
 
-  const handleUnenroll = async (syllabusId: string) => {
-    try {
-      await syllabuservice.unenrollFromSyllabus(Number(syllabusId));
-      // Refresh syllabus after unenrollment
-      loadSyllabus();
-    } catch (err) {
-      setError('Failed to unenroll from syllabus. Please try again.');
-    }
-  };
+  // const handleUnenroll = async (syllabusId: string) => {
+  //   try {
+  //     await syllabuservice.unenrollFromSyllabus(Number(syllabusId));
+  //     // Refresh syllabus after unenrollment
+  //     loadSyllabus();
+  //   } catch (err) {
+  //     setError('Failed to unenroll from syllabus. Please try again.');
+  //   }
+  // };
 
   const sortedSyllabus = [...syllabus].sort((a, b) => {
     switch (sortBy) {
