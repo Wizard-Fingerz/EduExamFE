@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+// import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import examService, { Exam } from '../../services/examService';
 import progressService, { SyllabusProgress } from '../../services/progressService';
@@ -7,11 +7,8 @@ import {
   Box,
   Paper,
   Typography,
-  Button,
   Stack,
   LinearProgress,
-  Card,
-  CardContent,
   IconButton,
   Tooltip,
   Container,
@@ -26,13 +23,9 @@ import {
 } from '@mui/material';
 import {
   Assessment as AssessmentIcon,
-  Timer as TimerIcon,
   TrendingUp as TrendingUpIcon,
-  ArrowForward as ArrowForwardIcon,
   Refresh as RefreshIcon,
   FilterList as FilterListIcon,
-  BookmarkBorder as BookmarkIcon,
-  BookmarkAdded as BookmarkFilledIcon,
 } from '@mui/icons-material';
 import {
   LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer, BarChart, Bar, PieChart, Pie, Cell, Legend
@@ -42,19 +35,17 @@ const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#A020F0', '#FF6384'
 
 export const Dashboard: React.FC = () => {
   const { user } = useAuth();
-  const navigate = useNavigate();
+  // const navigate = useNavigate();
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
-  const [bookmarkedExams, setBookmarkedExams] = useState<string[]>([]);
+  // const [bookmarkedExams, setBookmarkedExams] = useState<string[]>([]);
   const [selectedFilter, setSelectedFilter] = useState('all');
   console.log(selectedFilter);
-  const [upcomingExams, setUpcomingExams] = useState<Exam[]>([]);
   const [learningProgress, setLearningProgress] = useState<SyllabusProgress[]>([]);
   const [stats, setStats] = useState({
-    upcomingExams: 0,
     completedExams: 0,
     averageScore: 0
   });
@@ -68,11 +59,8 @@ export const Dashboard: React.FC = () => {
       setLoading(true);
       setError(null);
 
-      // Fetch upcoming exams
-      const exams = await examService.getExams();
-      // const exams = exams.results
-      const upcoming = exams.results.filter((exam: Exam) => new Date(exam.start_time) > new Date());
-      setUpcomingExams(upcoming);
+      // Fetch exams
+      const exams = await examService.getAllExams();
 
       // Fetch syllabus progress
       const progress = await Promise.all(
@@ -80,7 +68,7 @@ export const Dashboard: React.FC = () => {
       );
       setLearningProgress(progress);
 
-      // Calculate stats
+      // Calculate stats (remove upcomingExams from stats)
       const completedExams = exams.results.filter((exam: Exam) => 
         progress.some(p => p.syllabus === exam.syllabus && p.progress_percentage === 100)
       ).length;
@@ -88,7 +76,6 @@ export const Dashboard: React.FC = () => {
       const averageScore = progress.reduce((acc, curr) => acc + curr.progress_percentage, 0) / progress.length;
 
       setStats({
-        upcomingExams: upcoming.length,
         completedExams,
         averageScore: Math.round(averageScore)
       });
@@ -105,13 +92,13 @@ export const Dashboard: React.FC = () => {
     loadDashboardData();
   };
 
-  const toggleBookmark = (examId: string) => {
-    setBookmarkedExams(prev => 
-      prev.includes(examId) 
-        ? prev.filter(id => id !== examId)
-        : [...prev, examId]
-    );
-  };
+  // const toggleBookmark = (examId: string) => {
+  //   setBookmarkedExams(prev => 
+  //     prev.includes(examId) 
+  //       ? prev.filter(id => id !== examId)
+  //       : [...prev, examId]
+  //   );
+  // };
 
   const handleFilterClick = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorEl(event.currentTarget);
@@ -131,7 +118,6 @@ export const Dashboard: React.FC = () => {
   }));
 
   const examDistribution = [
-    { name: 'Upcoming', value: stats.upcomingExams },
     { name: 'Completed', value: stats.completedExams },
   ];
 
@@ -156,9 +142,6 @@ export const Dashboard: React.FC = () => {
             <Box>
               <Typography variant={isMobile ? 'h5' : 'h4'} gutterBottom>
                 Welcome back, {user?.first_name}!
-              </Typography>
-              <Typography variant="body1" color="text.secondary">
-                Continue your learning journey. You have {stats.upcomingExams} upcoming exams that need attention.
               </Typography>
             </Box>
             <Stack direction="row" spacing={1}>
@@ -199,15 +182,6 @@ export const Dashboard: React.FC = () => {
 
         {/* Quick Stats */}
         <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 3, mb: 4 }}>
-          <Paper sx={{ flex: 1, minWidth: 220, p: 3, borderRadius: 2 }}>
-            <Stack direction="row" spacing={2} alignItems="center">
-              <TimerIcon color="primary" sx={{ fontSize: 40 }} />
-              <Box>
-                <Typography variant="h6">{stats.upcomingExams}</Typography>
-                <Typography variant="body2" color="text.secondary">Upcoming Exams</Typography>
-              </Box>
-            </Stack>
-          </Paper>
           <Paper sx={{ flex: 1, minWidth: 220, p: 3, borderRadius: 2 }}>
             <Stack direction="row" spacing={2} alignItems="center">
               <AssessmentIcon color="primary" sx={{ fontSize: 40 }} />
@@ -275,56 +249,6 @@ export const Dashboard: React.FC = () => {
                 <Line type="monotone" dataKey="Score" stroke="#A020F0" strokeWidth={2} dot />
               </LineChart>
             </ResponsiveContainer>
-          </Paper>
-        </Box>
-
-        {/* Upcoming Exams List */}
-        <Box sx={{ mb: 4 }}>
-          <Paper sx={{ p: 3, borderRadius: 2 }}>
-            <Typography variant="h6" gutterBottom>Upcoming Exams</Typography>
-            {loading ? (
-              <Stack spacing={2}>
-                {[1, 2].map((i) => (
-                  <Skeleton key={i} variant="rectangular" height={100} />
-                ))}
-              </Stack>
-            ) : (
-              <Stack spacing={2}>
-                {upcomingExams.map((exam) => (
-                  <Card key={`exam-${exam.id}`} variant="outlined" sx={{ borderRadius: 2, transition: 'all 0.2s', '&:hover': { boxShadow: 3, transform: 'translateY(-2px)' } }}>
-                    <CardContent>
-                      <Stack direction={{ xs: 'column', sm: 'row' }} alignItems={{ xs: 'flex-start', sm: 'center' }} spacing={2}>
-                        <AssessmentIcon color="primary" />
-                        <Box sx={{ flexGrow: 1 }}>
-                          <Stack direction={{ xs: 'column', sm: 'row' }} alignItems={{ xs: 'flex-start', sm: 'center' }} spacing={1} mb={{ xs: 1, sm: 0 }}>
-                            <Typography variant="subtitle1">{exam.title}</Typography>
-                            <Chip size="small" label={exam.duration} color="primary" variant="outlined" />
-                          </Stack>
-                          <Typography variant="body2" color="text.secondary">
-                            {exam.subject.name} • Due in {new Date(exam.start_time).toLocaleDateString()} • Duration: {exam.duration} minutes
-                          </Typography>
-                        </Box>
-                        <Stack direction="row" spacing={1} sx={{ width: { xs: '100%', sm: 'auto' }, justifyContent: { xs: 'flex-end', sm: 'flex-start' }, mt: { xs: 1, sm: 0 } }}>
-                          <Tooltip title={bookmarkedExams.includes(exam.id.toString()) ? "Remove Bookmark" : "Bookmark Exam"}>
-                            <IconButton size="small" onClick={() => toggleBookmark(exam.id.toString())}>
-                              {bookmarkedExams.includes(exam.id.toString()) ? <BookmarkFilledIcon color="primary" /> : <BookmarkIcon />}
-                            </IconButton>
-                          </Tooltip>
-                          <Tooltip title="Start Exam">
-                            <IconButton color="primary" onClick={() => navigate(`/exam/${exam.id}`)}>
-                              <ArrowForwardIcon />
-                            </IconButton>
-                          </Tooltip>
-                        </Stack>
-                      </Stack>
-                    </CardContent>
-                  </Card>
-                ))}
-                <Button variant="outlined" endIcon={<ArrowForwardIcon />} onClick={() => navigate('/exams')} sx={{ alignSelf: 'flex-start' }} fullWidth={isMobile}>
-                  View All Exams
-                </Button>
-              </Stack>
-            )}
           </Paper>
         </Box>
 

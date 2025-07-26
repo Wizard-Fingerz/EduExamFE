@@ -65,7 +65,10 @@ const examService = {
     return await response.data;
   },
 
-
+  async getAllExams() {
+    const response = await api.get(`/exams/?all=true`);
+    return await response.data;
+  },
   async getExam(id: number) {
     const response = await api.get(`/exams/${id}/`);
     return response.data;
