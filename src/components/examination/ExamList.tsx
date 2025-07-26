@@ -32,6 +32,7 @@ import {
   // FilterList as FilterIcon,
 } from '@mui/icons-material';
 import examService, { Exam } from '../../services/examService';
+import Pagination from '@mui/material/Pagination';
 
 export const ExamList: React.FC = () => {
   const navigate = useNavigate();
@@ -41,18 +42,22 @@ export const ExamList: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [hoveredExam, setHoveredExam] = useState<number | null>(null);
-  console.log(hoveredExam);
   const [exams, setExams] = useState<Exam[]>([]);
+  const [page, setPage] = useState(1);
+  const [count, setCount] = useState(0);
+  const pageSize = 6; // or whatever your backend uses
 
   useEffect(() => {
-    loadExams();
-  }, []);
+    loadExams(page);
+    // eslint-disable-next-line
+  }, [page]);
 
-  const loadExams = async () => {
+  const loadExams = async (pageNum = 1) => {
     try {
       setLoading(true);
-      const data = await examService.getExams();
+      const data = await examService.getExams(pageNum); // <-- pass pageNum here!
       setExams(data.results);
+      setCount(data.count);
       setError(null);
     } catch (err) {
       setError('Failed to load exams. Please try again later.');
@@ -235,6 +240,17 @@ export const ExamList: React.FC = () => {
                   </Card>
                 </Zoom>
               ))}
+            </Box>
+          )}
+
+          {!loading && filteredExams.length > 0 && (
+            <Box display="flex" justifyContent="center" mt={4}>
+              <Pagination
+                count={Math.ceil(count / pageSize)}
+                page={page}
+                onChange={(_, value) => setPage(value)}
+                color="primary"
+              />
             </Box>
           )}
         </Box>

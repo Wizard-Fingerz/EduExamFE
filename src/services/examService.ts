@@ -60,10 +60,11 @@ export interface Answer {
 }
 
 const examService = {
-  async getExams() {
-    const response = await api.get('/exams/');
-    return response.data;
+  async getExams(pageNum: number) {
+    const response = await api.get(`/exams/?page=${pageNum}`);
+    return await response.data;
   },
+
 
   async getExam(id: number) {
     const response = await api.get(`/exams/${id}/`);
@@ -117,4 +118,9 @@ const examService = {
   },
 };
 
-export default examService; 
+// export const getExams = async (page = 1) => {
+//   const res = await fetch(`/api/exams/?page=${page}`);
+//   return res.json();
+// };
+
+export default examService;
