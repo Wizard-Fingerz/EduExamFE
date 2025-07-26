@@ -45,7 +45,9 @@ export const ExamList: React.FC = () => {
   const [exams, setExams] = useState<Exam[]>([]);
   const [page, setPage] = useState(1);
   const [count, setCount] = useState(0);
-  const pageSize = 6; // or whatever your backend uses
+  const pageSize = 10;
+
+  console.log(hoveredExam);
 
   useEffect(() => {
     loadExams(page);
@@ -55,7 +57,7 @@ export const ExamList: React.FC = () => {
   const loadExams = async (pageNum = 1) => {
     try {
       setLoading(true);
-      const data = await examService.getExams(pageNum); // <-- pass pageNum here!
+      const data = await examService.getExams(pageNum); // pass page number
       setExams(data.results);
       setCount(data.count);
       setError(null);
