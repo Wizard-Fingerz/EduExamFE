@@ -45,7 +45,7 @@ export const ExamList: React.FC = () => {
   const [exams, setExams] = useState<Exam[]>([]);
   const [page, setPage] = useState(1);
   const [count, setCount] = useState(0);
-  const pageSize = 10;
+  const pageSize = 12;
 
   console.log(hoveredExam);
 
